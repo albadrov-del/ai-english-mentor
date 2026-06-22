@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#1f6feb" />
+  <title>AI English Mentor</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <h1 class="app-title">🤖 AI English Mentor</h1>
+  </header>
+
+  <main class="app-main">
+    <!-- Home / profile selection (spec §7.1) -->
+    <section id="screen-home" class="screen" data-testid="screen-home">
+      <div class="screen-head">
+        <h2>Who's practicing?</h2>
+        <button type="button" class="btn btn-primary" data-testid="new-profile">+ New profile</button>
+      </div>
+      <ul class="profile-list" data-testid="profile-list"></ul>
+      <p class="empty-hint" data-testid="empty-hint" hidden>No profiles yet — create one to start.</p>
+    </section>
+
+    <!-- Profile editor (spec §7.2) -->
+    <section id="screen-editor" class="screen" data-testid="screen-editor" hidden>
+      <div class="screen-head">
+        <h2 data-testid="editor-title">New profile</h2>
+      </div>
+      <form id="profile-form" class="profile-form" novalidate>
+        <label class="field">
+          <span class="field-label">Name</span>
+          <input type="text" data-testid="profile-name" name="name" autocomplete="off" />
+          <span class="error" data-testid="error-name" hidden></span>
+        </label>
+        <label class="field">
+          <span class="field-label">English level</span>
+          <select data-testid="profile-level" name="level"></select>
+          <span class="error" data-testid="error-level" hidden></span>
+        </label>
+        <label class="field">
+          <span class="field-label">Interests / profession</span>
+          <textarea data-testid="profile-interests" name="interests" rows="3"
+            placeholder="e.g. water treatment, Turkish &amp; Korean dramas, family, Vinted"></textarea>
+        </label>
+        <div class="form-actions">
+          <button type="button" class="btn" data-testid="editor-back">Back</button>
+          <button type="button" class="btn btn-danger" data-testid="delete-profile" hidden>Delete</button>
+          <button type="submit" class="btn btn-primary" data-testid="save-profile">Save</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Conversation (placeholder — built in #2) -->
+    <section id="screen-conversation" class="screen" data-testid="conversation-screen" hidden>
+      <p class="conversation-greeting" data-testid="conversation-greeting"></p>
+      <p class="muted">Voice conversation arrives in the next task (#2).</p>
+      <button type="button" class="btn" data-testid="conversation-back">Back</button>
+    </section>
+  </main>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
