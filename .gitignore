@@ -18,3 +18,8 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+
+# Test artifacts
+/test-results/
+/playwright-report/
+/blob-report/

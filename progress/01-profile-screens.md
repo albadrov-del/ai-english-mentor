@@ -10,10 +10,12 @@
 - `tests/unit/profiles.test.js` — **12 passing** unit tests.
 - `public/index.html` + `public/styles.css` — mobile-first shell, three screens with `data-testid` hooks.
 - `public/js/app.js` — screen router + CRUD wiring to localStorage (create / edit / delete; select profile → conversation placeholder). Syntax-checked; unit tests green.
+- Playwright wired: `playwright.config.js`, `scripts/dev-server.mjs` (static server for tests), `tests/e2e/profiles.spec.js` (2 specs: full CRUD + persistence across reloads; validation blocks an incomplete profile). `@playwright/test` added; CI `e2e` job added.
 
 ## Next (to finish #1's DoD) — resume here
-- [ ] Playwright: add `@playwright/test` + `playwright.config.js` + a tiny static server (`scripts/dev-server.mjs`) + `tests/e2e/profiles.spec.js` (create → edit → delete + persistence across reload). Add an E2E job to CI. Selectors already in the DOM: `new-profile`, `profile-item`, `select-profile`, `edit-profile`, `profile-name`, `profile-level`, `profile-interests`, `save-profile`, `delete-profile`, `editor-back`, `conversation-screen`, `conversation-greeting`, `conversation-back`.
-- [ ] DoD met → PR `Closes #1` → **self-merge** → finalize this note → flip PROGRESS row to ✅.
+- [ ] Confirm CI is green on the PR (unit **and** Playwright E2E). ⚠️ The Playwright **browser download is blocked on this machine's network** (TLS `UNABLE_TO_VERIFY_LEAF_SIGNATURE` on Playwright's CDN), so E2E cannot run locally — **CI is the E2E gate.** Don't self-merge until CI is green.
+- [ ] When CI is green: **self-merge** PR `Closes #1`, finalize this note, flip the PROGRESS row to ✅, then continue to Issue #2.
+- [ ] If CI E2E fails: read the failing assertion, fix `public/` or the spec, push, re-check CI.
 
 ## Notes
 - Pure logic is DOM/storage-free so it unit-tests in Node; storage + UI are verified via Playwright E2E (per the testing strategy).

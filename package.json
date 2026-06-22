@@ -9,6 +9,7 @@
     "test:e2e": "playwright test"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.0",
     "jest": "^29.7.0"
   }
 }
