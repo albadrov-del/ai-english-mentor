@@ -16,7 +16,7 @@ Workflow is defined in [`specifikacija.md`](specifikacija.md) §11.
 | #  | Task | Status | Issue | Progress note |
 |----|------|--------|-------|---------------|
 | 0  | Project & workflow setup (git, repo, docs, issues) | ✅ done | — | [00-setup.md](progress/00-setup.md) |
-| 1  | Frontend scaffold — profile select + edit (localStorage) | ⬜ TODO | [#1](https://github.com/albadrov-del/ai-english-mentor/issues/1) | — |
+| 1  | Frontend scaffold — profile select + edit (localStorage) | 🟡 in progress | [#1](https://github.com/albadrov-del/ai-english-mentor/issues/1) | [01-profile-screens.md](progress/01-profile-screens.md) |
 | 2  | Conversation screen shell (text-only) + navigation | ⬜ TODO | [#2](https://github.com/albadrov-del/ai-english-mentor/issues/2) | — |
 | 3  | Backend proxy for Anthropic API | ⬜ TODO | [#3](https://github.com/albadrov-del/ai-english-mentor/issues/3) | — |
 | 4  | Wire frontend to Claude (text conversation works) | ⬜ TODO | [#4](https://github.com/albadrov-del/ai-english-mentor/issues/4) | — |
@@ -27,6 +27,8 @@ Workflow is defined in [`specifikacija.md`](specifikacija.md) §11.
 | 9  | README + hosting + Android install docs | ⬜ TODO | [#9](https://github.com/albadrov-del/ai-english-mentor/issues/9) | — |
 
 ## Per-task workflow
-Branch `feat/NN-slug` → meaningful commits → PR with `Closes #N` → merge to `main` →
-write `progress/NN-slug.md` → update this table. GitHub actions run via the owner's
-authenticated `gh` (account `albadrov-del`); the owner approves each.
+Branch `feat/NN-slug` → frequent commits (each a safe checkpoint) → PR with `Closes #N` →
+**self-merge** to `main` → write `progress/NN-slug.md` → update this table. GitHub actions run via
+the owner's authenticated `gh` (`albadrov-del`); **self-merge is authorized** for this project, so no
+per-merge approval is needed. The build runs in a self-paced `/loop` — the owner re-runs it after each
+usage reset and work resumes from `PROGRESS.md` + the latest `progress/` note.
