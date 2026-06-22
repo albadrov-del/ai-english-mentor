@@ -1,6 +1,6 @@
 # Task 3 — Backend proxy for Anthropic API
 
-**Status:** 🟡 in progress · **Issue:** #3 · **Branch:** `feat/03-anthropic-proxy`
+**Status:** ✅ done · **Issue:** #3 · **Merged:** PR #14
 
 ## Done
 - `server/prompt.js` — pure `buildSystemPrompt(profile)` (spec §5) + `checkPin` (fail-closed).
@@ -10,9 +10,8 @@
 - Tests: 4 unit (prompt + PIN) + 5 Supertest API (SDK mocked at the boundary) — **24 total green** locally.
 - README: `APP_PIN`, spend-cap warning, curl smoke-test.
 
-## Next (resume here)
-- [ ] Confirm CI green on the PR (unit + API + Playwright E2E). Verify `gh pr checks <PR>` conclusions before merging (see #2 lesson).
-- [ ] When green: **self-merge** `Closes #3`, finalize this note, PROGRESS → ✅, continue to **Issue #4** (wire the frontend to `/api/chat`).
+## Outcome
+✅ **Done.** Merged via PR #14; CI green (unit + API + E2E). Next: **Issue #4** — wire the conversation screen to `POST /api/chat` (send `{ profile, messages }` + the `x-app-pin` header, render the reply, multi-turn, graceful error handling; the frontend must **not** send a system prompt).
 
 ## Notes
 - Owner-side check (needs the real key, which the loop doesn't have): set `ANTHROPIC_API_KEY` + `APP_PIN` in `.env`, `npm start`, run the README curl → expect a real `{reply}`. Automated proof is the mocked API tests.
