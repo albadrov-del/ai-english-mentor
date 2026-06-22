@@ -16,15 +16,15 @@ Workflow is defined in [`specifikacija.md`](specifikacija.md) §11.
 | #  | Task | Status | Issue | Progress note |
 |----|------|--------|-------|---------------|
 | 0  | Project & workflow setup (git, repo, docs, issues) | ✅ done | — | [00-setup.md](progress/00-setup.md) |
-| 1  | Frontend scaffold — profile select + edit (localStorage) | ⬜ TODO | _pending_ | — |
-| 2  | Conversation screen shell (text-only) + navigation | ⬜ TODO | _pending_ | — |
-| 3  | Backend proxy for Anthropic API | ⬜ TODO | _pending_ | — |
-| 4  | Wire frontend to Claude (text conversation works) | ⬜ TODO | _pending_ | — |
-| 5  | Voice input + output (Web Speech API) | ⬜ TODO | _pending_ | — |
-| 6  | Animated robot avatar tied to speech | ⬜ TODO | _pending_ | — |
-| 7  | Level adaptation + session summary + prompt refinement | ⬜ TODO | _pending_ | — |
-| 8  | PWA wrapper (manifest, service worker, icons) | ⬜ TODO | _pending_ | — |
-| 9  | README + hosting + Android install docs | ⬜ TODO | _pending_ | — |
+| 1  | Frontend scaffold — profile select + edit (localStorage) | ⬜ TODO | [#1](https://github.com/albadrov-del/ai-english-mentor/issues/1) | — |
+| 2  | Conversation screen shell (text-only) + navigation | ⬜ TODO | [#2](https://github.com/albadrov-del/ai-english-mentor/issues/2) | — |
+| 3  | Backend proxy for Anthropic API | ⬜ TODO | [#3](https://github.com/albadrov-del/ai-english-mentor/issues/3) | — |
+| 4  | Wire frontend to Claude (text conversation works) | ⬜ TODO | [#4](https://github.com/albadrov-del/ai-english-mentor/issues/4) | — |
+| 5  | Voice input + output (Web Speech API) | ⬜ TODO | [#5](https://github.com/albadrov-del/ai-english-mentor/issues/5) | — |
+| 6  | Animated robot avatar tied to speech | ⬜ TODO | [#6](https://github.com/albadrov-del/ai-english-mentor/issues/6) | — |
+| 7  | Level adaptation + session summary + prompt refinement | ⬜ TODO | [#7](https://github.com/albadrov-del/ai-english-mentor/issues/7) | — |
+| 8  | PWA wrapper (manifest, service worker, icons) | ⬜ TODO | [#8](https://github.com/albadrov-del/ai-english-mentor/issues/8) | — |
+| 9  | README + hosting + Android install docs | ⬜ TODO | [#9](https://github.com/albadrov-del/ai-english-mentor/issues/9) | — |
 
 ## Per-task workflow
 Branch `feat/NN-slug` → meaningful commits → PR with `Closes #N` → merge to `main` →
