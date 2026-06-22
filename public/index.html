@@ -21,6 +21,13 @@
       </div>
       <ul class="profile-list" data-testid="profile-list"></ul>
       <p class="empty-hint" data-testid="empty-hint" hidden>No profiles yet — create one to start.</p>
+      <details class="settings">
+        <summary>Settings</summary>
+        <label class="field">
+          <span class="field-label">Access PIN</span>
+          <input type="password" data-testid="pin-input" autocomplete="off" placeholder="shared PIN for the AI" />
+        </label>
+      </details>
     </section>
 
     <!-- Profile editor (spec §7.2) -->
@@ -61,6 +68,7 @@
       <p class="conversation-greeting" data-testid="conversation-greeting"></p>
       <div class="avatar" data-testid="avatar" aria-hidden="true">🤖</div>
       <ul class="transcript" data-testid="transcript"></ul>
+      <p class="error chat-error" data-testid="chat-error" hidden></p>
       <form class="composer" id="composer">
         <input type="text" data-testid="message-input" name="message" autocomplete="off"
           placeholder="Type a message…" aria-label="Message" />

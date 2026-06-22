@@ -1,5 +1,5 @@
-// Screen router + UI wiring (Issues #1–#2).
-// Pure logic lives in profiles.js / conversation.js; persistence in storage.js. This file is the DOM glue.
+// Screen router + UI wiring (Issues #1–#4).
+// Pure logic lives in profiles.js / conversation.js / api.js; persistence in storage.js.
 import {
   LEVELS,
   createProfile,
@@ -8,8 +8,9 @@ import {
   deleteProfile,
   findProfile,
 } from './profiles.js';
-import { loadProfiles, saveProfiles } from './storage.js';
-import { createSession, appendTurn, stubReply } from './conversation.js';
+import { loadProfiles, saveProfiles, loadPin, savePin } from './storage.js';
+import { createSession, appendTurn } from './conversation.js';
+import { sendChat } from './api.js';
 
 const $ = (testid) => document.querySelector(`[data-testid="${testid}"]`);
 
@@ -24,6 +25,7 @@ const els = {
   list: $('profile-list'),
   emptyHint: $('empty-hint'),
   newBtn: $('new-profile'),
+  pinInput: $('pin-input'),
   form: document.getElementById('profile-form'),
   editorTitle: $('editor-title'),
   name: $('profile-name'),
@@ -36,6 +38,7 @@ const els = {
   greeting: $('conversation-greeting'),
   conversationBack: $('conversation-back'),
   transcript: $('transcript'),
+  chatError: $('chat-error'),
   composer: document.getElementById('composer'),
   input: $('message-input'),
   endSession: $('end-session'),
@@ -45,6 +48,7 @@ const els = {
 let profiles = [];
 let editingId = null;
 let session = null;
+let sending = false;
 
 function showScreen(name) {
   for (const [key, el] of Object.entries(screens)) el.hidden = key !== name;
@@ -168,7 +172,7 @@ function onDelete() {
   goHome();
 }
 
-// ---- Conversation (Issue #2) ----
+// ---- Conversation (Issues #2, #4) ----
 function renderTranscript() {
   els.transcript.innerHTML = '';
   for (const m of session.messages) {
@@ -181,27 +185,62 @@ function renderTranscript() {
   els.transcript.scrollTop = els.transcript.scrollHeight;
 }
 
+function clearChatError() {
+  els.chatError.hidden = true;
+  els.chatError.textContent = '';
+}
+
+function showChatError(msg) {
+  els.chatError.textContent = msg;
+  els.chatError.hidden = false;
+}
+
+function setSending(on) {
+  sending = on;
+  els.input.disabled = on;
+}
+
 function openConversation(id) {
   const profile = findProfile(profiles, id);
   if (!profile) return;
   session = createSession(profile);
   els.greeting.textContent = `Practice session with ${profile.name} (${profile.level})`;
+  clearChatError();
   renderTranscript();
   showScreen('conversation');
   els.input.focus();
 }
 
-function onSend(e) {
+async function onSend(e) {
   e.preventDefault();
-  if (!session) return;
+  if (!session || sending) return;
   const text = els.input.value.trim();
   if (!text) return;
-  // For now the assistant turn is a local stub; the real Claude reply arrives in #4.
-  session.messages = appendTurn(session.messages, 'user', text);
-  session.messages = appendTurn(session.messages, 'assistant', stubReply(text));
+
+  clearChatError();
   els.input.value = '';
+  session.messages = appendTurn(session.messages, 'user', text);
   renderTranscript();
-  els.input.focus();
+  setSending(true);
+
+  try {
+    const reply = await sendChat({
+      profile: session.profile,
+      messages: session.messages, // full history → multi-turn context
+      pin: loadPin(),
+    });
+    session.messages = appendTurn(session.messages, 'assistant', reply);
+    renderTranscript();
+  } catch (err) {
+    showChatError(
+      err && err.status === 401
+        ? 'Wrong or missing PIN — set it in Settings on the home screen.'
+        : 'Could not reach the tutor. Check your connection and try again.',
+    );
+  } finally {
+    setSending(false);
+    els.input.focus();
+  }
 }
 
 function endSession() {
@@ -213,6 +252,9 @@ function init() {
   profiles = loadProfiles();
   renderHome();
   showScreen('home');
+
+  els.pinInput.value = loadPin();
+  els.pinInput.addEventListener('input', () => savePin(els.pinInput.value.trim()));
 
   els.newBtn.addEventListener('click', () => openEditor(null));
   els.form.addEventListener('submit', onSave);
