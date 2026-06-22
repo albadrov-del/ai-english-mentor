@@ -144,4 +144,11 @@ body {
   border-radius: var(--radius);
   color: var(--text);
 }
+.composer input:disabled { opacity: 0.6; }
+.chat-error { margin: 0 0 0.75rem; }
 .muted { color: var(--muted); }
+
+/* Settings */
+.settings { margin-top: 1.5rem; color: var(--muted); }
+.settings summary { cursor: pointer; padding: 0.25rem 0; }
+.settings .field { margin-top: 0.75rem; }

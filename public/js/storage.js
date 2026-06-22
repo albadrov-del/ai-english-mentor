@@ -19,3 +19,23 @@ export function loadProfiles() {
 export function saveProfiles(profiles) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(profiles));
 }
+
+const PIN_KEY = 'aem.pin.v1';
+
+/** Load the saved access PIN (empty string if none). */
+export function loadPin() {
+  try {
+    return localStorage.getItem(PIN_KEY) ?? '';
+  } catch {
+    return '';
+  }
+}
+
+/** Persist the access PIN. */
+export function savePin(pin) {
+  try {
+    localStorage.setItem(PIN_KEY, pin ?? '');
+  } catch {
+    /* ignore */
+  }
+}
