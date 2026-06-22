@@ -1,5 +1,5 @@
-// Screen router + UI wiring for profile selection/editing (Issue #1).
-// Pure logic lives in profiles.js; persistence in storage.js. This file is the DOM glue.
+// Screen router + UI wiring (Issues #1–#2).
+// Pure logic lives in profiles.js / conversation.js; persistence in storage.js. This file is the DOM glue.
 import {
   LEVELS,
   createProfile,
@@ -9,6 +9,7 @@ import {
   findProfile,
 } from './profiles.js';
 import { loadProfiles, saveProfiles } from './storage.js';
+import { createSession, appendTurn, stubReply } from './conversation.js';
 
 const $ = (testid) => document.querySelector(`[data-testid="${testid}"]`);
 
@@ -16,6 +17,7 @@ const screens = {
   home: document.getElementById('screen-home'),
   editor: document.getElementById('screen-editor'),
   conversation: document.getElementById('screen-conversation'),
+  summary: document.getElementById('screen-summary'),
 };
 
 const els = {
@@ -33,10 +35,16 @@ const els = {
   errLevel: $('error-level'),
   greeting: $('conversation-greeting'),
   conversationBack: $('conversation-back'),
+  transcript: $('transcript'),
+  composer: document.getElementById('composer'),
+  input: $('message-input'),
+  endSession: $('end-session'),
+  summaryHome: $('summary-home'),
 };
 
 let profiles = [];
 let editingId = null;
+let session = null;
 
 function showScreen(name) {
   for (const [key, el] of Object.entries(screens)) el.hidden = key !== name;
@@ -48,6 +56,7 @@ function escapeHtml(s) {
   );
 }
 
+// ---- Profiles (Issue #1) ----
 function populateLevels() {
   els.level.innerHTML = '';
   const placeholder = document.createElement('option');
@@ -159,11 +168,44 @@ function onDelete() {
   goHome();
 }
 
+// ---- Conversation (Issue #2) ----
+function renderTranscript() {
+  els.transcript.innerHTML = '';
+  for (const m of session.messages) {
+    const li = document.createElement('li');
+    li.className = `turn turn-${m.role}`;
+    li.dataset.role = m.role;
+    li.textContent = m.content;
+    els.transcript.appendChild(li);
+  }
+  els.transcript.scrollTop = els.transcript.scrollHeight;
+}
+
 function openConversation(id) {
-  const p = findProfile(profiles, id);
-  if (!p) return;
-  els.greeting.textContent = `Practice session with ${p.name} (${p.level})`;
+  const profile = findProfile(profiles, id);
+  if (!profile) return;
+  session = createSession(profile);
+  els.greeting.textContent = `Practice session with ${profile.name} (${profile.level})`;
+  renderTranscript();
   showScreen('conversation');
+  els.input.focus();
+}
+
+function onSend(e) {
+  e.preventDefault();
+  if (!session) return;
+  const text = els.input.value.trim();
+  if (!text) return;
+  // For now the assistant turn is a local stub; the real Claude reply arrives in #4.
+  session.messages = appendTurn(session.messages, 'user', text);
+  session.messages = appendTurn(session.messages, 'assistant', stubReply(text));
+  els.input.value = '';
+  renderTranscript();
+  els.input.focus();
+}
+
+function endSession() {
+  showScreen('summary');
 }
 
 function init() {
@@ -177,6 +219,9 @@ function init() {
   els.delete.addEventListener('click', onDelete);
   els.editorBack.addEventListener('click', goHome);
   els.conversationBack.addEventListener('click', () => showScreen('home'));
+  els.composer.addEventListener('submit', onSend);
+  els.endSession.addEventListener('click', endSession);
+  els.summaryHome.addEventListener('click', () => showScreen('home'));
 }
 
 init();

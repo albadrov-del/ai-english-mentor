@@ -52,11 +52,27 @@
       </form>
     </section>
 
-    <!-- Conversation (placeholder — built in #2) -->
+    <!-- Conversation (text-only shell — #2; voice in #5, avatar in #6) -->
     <section id="screen-conversation" class="screen" data-testid="conversation-screen" hidden>
+      <div class="conversation-head">
+        <button type="button" class="btn btn-small" data-testid="conversation-back">← Home</button>
+        <button type="button" class="btn btn-small" data-testid="end-session">End session</button>
+      </div>
       <p class="conversation-greeting" data-testid="conversation-greeting"></p>
-      <p class="muted">Voice conversation arrives in the next task (#2).</p>
-      <button type="button" class="btn" data-testid="conversation-back">Back</button>
+      <div class="avatar" data-testid="avatar" aria-hidden="true">🤖</div>
+      <ul class="transcript" data-testid="transcript"></ul>
+      <form class="composer" id="composer">
+        <input type="text" data-testid="message-input" name="message" autocomplete="off"
+          placeholder="Type a message…" aria-label="Message" />
+        <button type="submit" class="btn btn-primary" data-testid="send-message">Send</button>
+      </form>
+    </section>
+
+    <!-- Session summary (placeholder — real summary in #7) -->
+    <section id="screen-summary" class="screen" data-testid="summary-screen" hidden>
+      <h2>Session summary</h2>
+      <p class="muted" data-testid="summary-body">Session ended. A coaching summary appears here once the AI is connected (#7).</p>
+      <button type="button" class="btn btn-primary" data-testid="summary-home">Back to home</button>
     </section>
   </main>
 
