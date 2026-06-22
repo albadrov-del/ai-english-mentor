@@ -1,0 +1,14 @@
+{
+  "name": "ai-english-mentor",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Voice-based English conversation practice PWA with a Claude-powered tutor",
+  "scripts": {
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}
