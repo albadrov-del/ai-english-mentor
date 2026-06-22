@@ -17,7 +17,7 @@ Workflow is defined in [`specifikacija.md`](specifikacija.md) §11.
 |----|------|--------|-------|---------------|
 | 0  | Project & workflow setup (git, repo, docs, issues) | ✅ done | — | [00-setup.md](progress/00-setup.md) |
 | 1  | Frontend scaffold — profile select + edit (localStorage) | ✅ done | [#1](https://github.com/albadrov-del/ai-english-mentor/issues/1) | [01-profile-screens.md](progress/01-profile-screens.md) |
-| 2  | Conversation screen shell (text-only) + navigation | ⬜ TODO | [#2](https://github.com/albadrov-del/ai-english-mentor/issues/2) | — |
+| 2  | Conversation screen shell (text-only) + navigation | 🟡 in progress | [#2](https://github.com/albadrov-del/ai-english-mentor/issues/2) | [02-conversation-shell.md](progress/02-conversation-shell.md) |
 | 3  | Backend proxy for Anthropic API | ⬜ TODO | [#3](https://github.com/albadrov-del/ai-english-mentor/issues/3) | — |
 | 4  | Wire frontend to Claude (text conversation works) | ⬜ TODO | [#4](https://github.com/albadrov-del/ai-english-mentor/issues/4) | — |
 | 5  | Voice input + output (Web Speech API) | ⬜ TODO | [#5](https://github.com/albadrov-del/ai-english-mentor/issues/5) | — |
