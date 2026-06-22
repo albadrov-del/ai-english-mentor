@@ -44,13 +44,27 @@ npm start
 ```
 
 ## Configuration
-This app needs an Anthropic API key. Copy `.env.example` to `.env` and set:
+The app needs two env vars (backend only — never exposed to the frontend). Copy `.env.example` to `.env` and set:
 
 ```
-ANTHROPIC_API_KEY=your-key-here   # 👈 owner inserts the key here
+ANTHROPIC_API_KEY=your-key-here    # 👈 owner inserts the Anthropic key here
+APP_PIN=choose-a-shared-pin        # gate for /api/chat (sent as the x-app-pin header)
 ```
 
-The key is read by the **backend only** and is never exposed to the frontend.
+- **`ANTHROPIC_API_KEY`** is read by the backend only and never reaches the browser.
+- **`APP_PIN`** gates the proxy: requests without a matching `x-app-pin` header get `401`. Share it with whoever uses the app.
+- ⚠️ **Set a low monthly spend cap** on your Anthropic key in the console — the deployed proxy is reachable from the internet, and the cap bounds worst-case abuse.
+
+### Smoke-test the proxy
+With the server running (`npm start`):
+
+```bash
+curl -s http://localhost:3000/api/chat \
+  -H "content-type: application/json" -H "x-app-pin: $APP_PIN" \
+  -d '{"profile":{"name":"Josipa","level":"B1","interests":"water treatment"},
+       "messages":[{"role":"user","content":"Hi, can we practice?"}]}'
+# -> {"reply":"..."}
+```
 
 ## Out of scope for v1 (possibly later)
 Real video / 3D / lip-sync avatar · app-store publishing · cloud accounts & cross-device sync ·

@@ -5,11 +5,18 @@
   "type": "module",
   "description": "Voice-based English conversation practice PWA with a Claude-powered tutor",
   "scripts": {
+    "start": "node server.js",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test:e2e": "playwright test"
   },
   "devDependencies": {
     "@playwright/test": "^1.61.0",
-    "jest": "^29.7.0"
+    "jest": "^29.7.0",
+    "supertest": "^7.2.2"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.105.0",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1"
   }
 }
