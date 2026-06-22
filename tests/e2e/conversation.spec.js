@@ -38,8 +38,10 @@ test('sending text shows the user turn and a stubbed reply, then clears the inpu
   await page.getByTestId('message-input').fill('Hello mentor');
   await page.getByTestId('send-message').click();
 
+  // Scope by role: the assistant echo also contains "Hello mentor", so a bare
+  // getByText('Hello mentor') would match both turns (strict-mode violation).
   const transcript = page.getByTestId('transcript');
-  await expect(transcript.getByText('Hello mentor')).toBeVisible();
-  await expect(transcript.getByText(/Echo placeholder/)).toBeVisible();
+  await expect(transcript.locator('[data-role="user"]')).toHaveText('Hello mentor');
+  await expect(transcript.locator('[data-role="assistant"]')).toContainText('Echo placeholder');
   await expect(page.getByTestId('message-input')).toHaveValue('');
 });
