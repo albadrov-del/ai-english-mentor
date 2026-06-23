@@ -20,7 +20,7 @@ Workflow is defined in [`specifikacija.md`](specifikacija.md) §11.
 | 2  | Conversation screen shell (text-only) + navigation | ✅ done | [#2](https://github.com/albadrov-del/ai-english-mentor/issues/2) | [02-conversation-shell.md](progress/02-conversation-shell.md) |
 | 3  | Backend proxy for Anthropic API | ✅ done | [#3](https://github.com/albadrov-del/ai-english-mentor/issues/3) | [03-anthropic-proxy.md](progress/03-anthropic-proxy.md) |
 | 4  | Wire frontend to Claude (text conversation works) | ✅ done | [#4](https://github.com/albadrov-del/ai-english-mentor/issues/4) | [04-wire-claude.md](progress/04-wire-claude.md) |
-| 5  | Voice input + output (Web Speech API) | ⬜ TODO | [#5](https://github.com/albadrov-del/ai-english-mentor/issues/5) | — |
+| 5  | Voice input + output (Web Speech API) | 🟡 in progress | [#5](https://github.com/albadrov-del/ai-english-mentor/issues/5) | [05-voice.md](progress/05-voice.md) |
 | 6  | Animated robot avatar tied to speech | ⬜ TODO | [#6](https://github.com/albadrov-del/ai-english-mentor/issues/6) | — |
 | 7  | Level adaptation + session summary + prompt refinement | ⬜ TODO | [#7](https://github.com/albadrov-del/ai-english-mentor/issues/7) | — |
 | 8  | PWA wrapper (manifest, service worker, icons) | ⬜ TODO | [#8](https://github.com/albadrov-del/ai-english-mentor/issues/8) | — |
