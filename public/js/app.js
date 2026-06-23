@@ -344,6 +344,13 @@ function setupVoice() {
   }
 }
 
+function registerServiceWorker() {
+  if (!('serviceWorker' in navigator)) return;
+  const register = () => navigator.serviceWorker.register('sw.js').catch(() => {});
+  if (document.readyState === 'complete') register();
+  else window.addEventListener('load', register);
+}
+
 function init() {
   populateLevels();
   profiles = loadProfiles();
@@ -363,6 +370,7 @@ function init() {
   els.summaryHome.addEventListener('click', () => showScreen('home'));
 
   setupVoice();
+  registerServiceWorker();
 }
 
 init();
