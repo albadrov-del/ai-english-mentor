@@ -38,6 +38,7 @@ const els = {
   errName: $('error-name'),
   errLevel: $('error-level'),
   greeting: $('conversation-greeting'),
+  avatar: $('avatar'),
   conversationBack: $('conversation-back'),
   transcript: $('transcript'),
   chatError: $('chat-error'),
@@ -207,6 +208,11 @@ function setSending(on) {
   if (mic) els.mic.disabled = on;
 }
 
+function setSpeaking(on) {
+  els.avatar.dataset.speaking = on ? 'true' : 'false';
+  els.avatar.classList.toggle('speaking', on);
+}
+
 function speakReply(text) {
   if (!voiceOut || !text) return;
   speak({
@@ -214,6 +220,8 @@ function speakReply(text) {
     speechSynthesis: window.speechSynthesis,
     Utterance: window.SpeechSynthesisUtterance,
     lang: SPEECH_LANG,
+    onStart: () => setSpeaking(true),
+    onEnd: () => setSpeaking(false),
   });
 }
 
@@ -267,6 +275,7 @@ function stopVoice() {
   } catch {
     /* ignore */
   }
+  setSpeaking(false);
 }
 
 function openConversation(id) {
@@ -275,6 +284,7 @@ function openConversation(id) {
   session = createSession(profile);
   els.greeting.textContent = `Practice session with ${profile.name} (${profile.level})`;
   clearChatError();
+  setSpeaking(false);
   if (mic) updateMicUI('idle');
   renderTranscript();
   showScreen('conversation');

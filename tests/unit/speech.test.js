@@ -103,4 +103,35 @@ describe('speak', () => {
     expect(synth.cancel).toHaveBeenCalled();
     expect(spoken).toEqual(['hello']);
   });
+
+  test('wires onStart/onEnd to the utterance lifecycle', () => {
+    let utter;
+    const synth = { cancel() {}, speak: (u) => { utter = u; } };
+    function Utterance(text) {
+      this.text = text;
+    }
+    const events = [];
+    speak({
+      text: 'hi',
+      speechSynthesis: synth,
+      Utterance,
+      onStart: () => events.push('start'),
+      onEnd: () => events.push('end'),
+    });
+    utter.onstart();
+    utter.onend();
+    expect(events).toEqual(['start', 'end']);
+  });
+
+  test('an utterance error also ends the speaking state', () => {
+    let utter;
+    const synth = { cancel() {}, speak: (u) => { utter = u; } };
+    function Utterance(text) {
+      this.text = text;
+    }
+    const events = [];
+    speak({ text: 'hi', speechSynthesis: synth, Utterance, onEnd: () => events.push('end') });
+    utter.onerror();
+    expect(events).toEqual(['end']);
+  });
 });

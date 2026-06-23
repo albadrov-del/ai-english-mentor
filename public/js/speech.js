@@ -86,13 +86,22 @@ export function createMic({
   return api;
 }
 
-/** Speak text via SpeechSynthesis. Returns true if it was dispatched. */
-export function speak({ text, speechSynthesis, Utterance, lang = 'en-US' } = {}) {
+/**
+ * Speak text via SpeechSynthesis. Returns true if it was dispatched.
+ * onStart/onEnd fire on the utterance lifecycle (used to animate the avatar).
+ */
+export function speak({ text, speechSynthesis, Utterance, lang = 'en-US', onStart, onEnd } = {}) {
   if (!text || !speechSynthesis || typeof Utterance !== 'function') return false;
   try {
     speechSynthesis.cancel();
     const utterance = new Utterance(text);
     utterance.lang = lang;
+    if (typeof onStart === 'function') utterance.onstart = () => onStart();
+    if (typeof onEnd === 'function') {
+      const done = () => onEnd();
+      utterance.onend = done;
+      utterance.onerror = done; // never get stuck "speaking" if it errors
+    }
     speechSynthesis.speak(utterance);
     return true;
   } catch {
