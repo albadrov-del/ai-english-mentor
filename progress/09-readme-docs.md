@@ -1,6 +1,6 @@
 # Task 9 — README + hosting + Android install docs
 
-**Status:** 🟡 in progress · **Issue:** #9 · **Branch:** `feat/09-readme-docs`
+**Status:** ✅ done · **Issue:** #9 · **Merged:** PR #20
 
 ## Done
 - Rewrote `README.md` from the skeleton into a full guide:
@@ -13,9 +13,8 @@
   - Out of scope (spec §8); project layout.
 - Verified all README-referenced paths exist (internal links resolve).
 
-## Next (resume here)
-- [ ] Confirm CI green on the PR (docs-only; unit + E2E should pass unchanged).
-- [ ] When green: **self-merge** `Closes #9` → **all 9 issues done** → set every PROGRESS row ✅, finalize this note, write the closing summary, and STOP the loop.
+## Outcome
+✅ **Done.** Merged via PR #20; CI green. **This was the last task — all 9 issues are complete.** The README is a full run/test/deploy/install guide.
 
 ## Notes
 - Docs-only task; no new code.

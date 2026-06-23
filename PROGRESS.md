@@ -24,7 +24,9 @@ Workflow is defined in [`specifikacija.md`](specifikacija.md) §11.
 | 6  | Animated robot avatar tied to speech | ✅ done | [#6](https://github.com/albadrov-del/ai-english-mentor/issues/6) | [06-avatar.md](progress/06-avatar.md) |
 | 7  | Level adaptation + session summary + prompt refinement | ✅ done | [#7](https://github.com/albadrov-del/ai-english-mentor/issues/7) | [07-level-summary.md](progress/07-level-summary.md) |
 | 8  | PWA wrapper (manifest, service worker, icons) | ✅ done | [#8](https://github.com/albadrov-del/ai-english-mentor/issues/8) | [08-pwa.md](progress/08-pwa.md) |
-| 9  | README + hosting + Android install docs | 🟡 in progress | [#9](https://github.com/albadrov-del/ai-english-mentor/issues/9) | [09-readme-docs.md](progress/09-readme-docs.md) |
+| 9  | README + hosting + Android install docs | ✅ done | [#9](https://github.com/albadrov-del/ai-english-mentor/issues/9) | [09-readme-docs.md](progress/09-readme-docs.md) |
+
+🎉 **v1 complete — all 9 issues merged.** Owner-side to-dos remain: deploy to an HTTPS host (Render/Railway), set `ANTHROPIC_API_KEY` + `APP_PIN` + a low monthly spend cap, and verify real microphone/speech + Add-to-Home-Screen install on an Android phone.
 
 ## Per-task workflow
 Branch `feat/NN-slug` → frequent commits (each a safe checkpoint) → PR with `Closes #N` →
