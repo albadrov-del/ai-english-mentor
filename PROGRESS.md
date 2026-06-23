@@ -21,7 +21,7 @@ Workflow is defined in [`specifikacija.md`](specifikacija.md) §11.
 | 3  | Backend proxy for Anthropic API | ✅ done | [#3](https://github.com/albadrov-del/ai-english-mentor/issues/3) | [03-anthropic-proxy.md](progress/03-anthropic-proxy.md) |
 | 4  | Wire frontend to Claude (text conversation works) | ✅ done | [#4](https://github.com/albadrov-del/ai-english-mentor/issues/4) | [04-wire-claude.md](progress/04-wire-claude.md) |
 | 5  | Voice input + output (Web Speech API) | ✅ done | [#5](https://github.com/albadrov-del/ai-english-mentor/issues/5) | [05-voice.md](progress/05-voice.md) |
-| 6  | Animated robot avatar tied to speech | ⬜ TODO | [#6](https://github.com/albadrov-del/ai-english-mentor/issues/6) | — |
+| 6  | Animated robot avatar tied to speech | 🟡 in progress | [#6](https://github.com/albadrov-del/ai-english-mentor/issues/6) | [06-avatar.md](progress/06-avatar.md) |
 | 7  | Level adaptation + session summary + prompt refinement | ⬜ TODO | [#7](https://github.com/albadrov-del/ai-english-mentor/issues/7) | — |
 | 8  | PWA wrapper (manifest, service worker, icons) | ⬜ TODO | [#8](https://github.com/albadrov-del/ai-english-mentor/issues/8) | — |
 | 9  | README + hosting + Android install docs | ⬜ TODO | [#9](https://github.com/albadrov-del/ai-english-mentor/issues/9) | — |
