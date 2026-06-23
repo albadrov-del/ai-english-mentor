@@ -23,7 +23,7 @@ Workflow is defined in [`specifikacija.md`](specifikacija.md) §11.
 | 5  | Voice input + output (Web Speech API) | ✅ done | [#5](https://github.com/albadrov-del/ai-english-mentor/issues/5) | [05-voice.md](progress/05-voice.md) |
 | 6  | Animated robot avatar tied to speech | ✅ done | [#6](https://github.com/albadrov-del/ai-english-mentor/issues/6) | [06-avatar.md](progress/06-avatar.md) |
 | 7  | Level adaptation + session summary + prompt refinement | ✅ done | [#7](https://github.com/albadrov-del/ai-english-mentor/issues/7) | [07-level-summary.md](progress/07-level-summary.md) |
-| 8  | PWA wrapper (manifest, service worker, icons) | ⬜ TODO | [#8](https://github.com/albadrov-del/ai-english-mentor/issues/8) | — |
+| 8  | PWA wrapper (manifest, service worker, icons) | 🟡 in progress | [#8](https://github.com/albadrov-del/ai-english-mentor/issues/8) | [08-pwa.md](progress/08-pwa.md) |
 | 9  | README + hosting + Android install docs | ⬜ TODO | [#9](https://github.com/albadrov-del/ai-english-mentor/issues/9) | — |
 
 ## Per-task workflow
