@@ -115,7 +115,29 @@ body {
 /* Conversation */
 .conversation-head { display: flex; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.5rem; }
 .conversation-greeting { font-size: 1.05rem; font-weight: 600; margin: 0.25rem 0; }
-.avatar { font-size: 3rem; text-align: center; margin: 0.5rem 0 1rem; }
+.avatar { text-align: center; margin: 0.5rem 0 1rem; }
+.robot { display: block; margin: 0 auto; }
+.robot-head { fill: var(--surface-2); stroke: var(--border); stroke-width: 2; }
+.robot-eye { fill: var(--primary); }
+.robot-mouth { fill: var(--primary); transform-box: fill-box; transform-origin: center; }
+.robot-antenna { stroke: var(--border); stroke-width: 3; stroke-linecap: round; }
+.robot-antenna-tip { fill: var(--muted); }
+
+/* Animate only while the tutor is speaking */
+.avatar.speaking .robot { animation: robot-nod 0.7s ease-in-out infinite; }
+.avatar.speaking .robot-mouth { animation: robot-talk 0.28s steps(2, end) infinite alternate; }
+.avatar.speaking .robot-antenna-tip { animation: robot-pulse 0.7s ease-in-out infinite; }
+.avatar.speaking .robot-eye { fill: #58a6ff; }
+
+@keyframes robot-talk { from { transform: scaleY(0.35); } to { transform: scaleY(1); } }
+@keyframes robot-nod { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+@keyframes robot-pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .avatar.speaking .robot,
+  .avatar.speaking .robot-mouth,
+  .avatar.speaking .robot-antenna-tip { animation: none; }
+}
 .transcript {
   list-style: none;
   margin: 0 0 1rem;
