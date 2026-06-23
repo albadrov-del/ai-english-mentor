@@ -10,7 +10,7 @@ import {
 } from './profiles.js';
 import { loadProfiles, saveProfiles, loadPin, savePin } from './storage.js';
 import { createSession, appendTurn } from './conversation.js';
-import { sendChat } from './api.js';
+import { sendChat, sendSummary } from './api.js';
 import { getSpeechRecognition, isSynthesisSupported, createMic, speak } from './speech.js';
 
 const $ = (testid) => document.querySelector(`[data-testid="${testid}"]`);
@@ -48,6 +48,7 @@ const els = {
   input: $('message-input'),
   endSession: $('end-session'),
   summaryHome: $('summary-home'),
+  summaryBody: $('summary-body'),
 };
 
 let profiles = [];
@@ -296,6 +297,29 @@ function leaveConversation(target) {
   showScreen(target);
 }
 
+async function endSession() {
+  stopVoice();
+  showScreen('summary');
+  if (!session) {
+    els.summaryBody.textContent = 'Session ended.';
+    return;
+  }
+  els.summaryBody.dataset.state = 'loading';
+  els.summaryBody.textContent = 'Preparing your summary…';
+  try {
+    const summary = await sendSummary({
+      profile: session.profile,
+      messages: session.messages,
+      pin: loadPin(),
+    });
+    els.summaryBody.textContent = summary || 'Great work today — keep it up!';
+    els.summaryBody.dataset.state = 'ready';
+  } catch {
+    els.summaryBody.textContent = 'Could not load your summary right now — but great work today! 🎉';
+    els.summaryBody.dataset.state = 'error';
+  }
+}
+
 function setupVoice() {
   const Recognition = getSpeechRecognition(window);
   voiceOut = isSynthesisSupported(window);
@@ -335,7 +359,7 @@ function init() {
   els.editorBack.addEventListener('click', goHome);
   els.conversationBack.addEventListener('click', () => leaveConversation('home'));
   els.composer.addEventListener('submit', onSend);
-  els.endSession.addEventListener('click', () => leaveConversation('summary'));
+  els.endSession.addEventListener('click', endSession);
   els.summaryHome.addEventListener('click', () => showScreen('home'));
 
   setupVoice();

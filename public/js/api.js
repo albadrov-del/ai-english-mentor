@@ -34,3 +34,19 @@ export async function sendChat({ profile, messages, pin }) {
   const data = await res.json().catch(() => ({}));
   return data.reply ?? '';
 }
+
+/** POST to /api/summary with the PIN header; resolve to the summary text, or throw with .status. */
+export async function sendSummary({ profile, messages, pin }) {
+  const res = await fetch('/api/summary', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', 'x-app-pin': pin ?? '' },
+    body: JSON.stringify(buildChatBody(profile, messages)),
+  });
+  if (!res.ok) {
+    const err = new Error(`Summary request failed (${res.status})`);
+    err.status = res.status;
+    throw err;
+  }
+  const data = await res.json().catch(() => ({}));
+  return data.summary ?? '';
+}
