@@ -11,20 +11,24 @@ async function createProfile(page, name, level) {
 // speak() fires onstart immediately and stores the utterance so the test can fire onend.
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
-    window.speechSynthesis = {
+    const synth = {
       cancel() {},
       speak(u) {
         window.__lastUtterance = u;
         if (u.onstart) u.onstart();
       },
     };
-    window.SpeechSynthesisUtterance = function (t) {
+    function FakeUtterance(t) {
       this.text = t;
       this.lang = '';
       this.onstart = null;
       this.onend = null;
       this.onerror = null;
-    };
+    }
+    // window.speechSynthesis is a read-only accessor in real browsers, so a plain
+    // assignment is ignored — shadow it with an own property instead.
+    Object.defineProperty(window, 'speechSynthesis', { value: synth, configurable: true, writable: true });
+    Object.defineProperty(window, 'SpeechSynthesisUtterance', { value: FakeUtterance, configurable: true, writable: true });
   });
   await page.goto('/');
   await page.evaluate(() => localStorage.clear());
