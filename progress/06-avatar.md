@@ -1,6 +1,6 @@
 # Task 6 — Animated robot avatar tied to speech
 
-**Status:** 🟡 in progress · **Issue:** #6 · **Branch:** `feat/06-avatar`
+**Status:** ✅ done · **Issue:** #6 · **Merged:** PR #17
 
 ## Done
 - `index.html` — an SVG robot (head / eyes / mouth / antenna) replaces the emoji placeholder; the avatar carries `data-speaking`.
@@ -9,9 +9,10 @@
 - `styles.css` — robot styling + mouth (scaleY) / nod / antenna-pulse animations **only** while `.speaking`; honors `prefers-reduced-motion`. No 3D/video libs.
 - Tests: 2 unit (`speak` lifecycle wiring) + 1 E2E smoke (`avatar.spec.js`: speaking state on reply, idle after `onend`; synthesis stubbed). **40 total green** locally.
 
-## Next (resume here)
-- [ ] Confirm CI green on the PR (verify `gh pr checks <PR>` conclusions; E2E runs in CI only).
-- [ ] When green: **self-merge** `Closes #6`, finalize this note, PROGRESS → ✅, continue to **Issue #7** (level adaptation + session summary + prompt refinement).
+## Outcome
+✅ **Done.** Merged via PR #17; CI green. The robot animates only while the tutor speaks. Next: **Issue #7** (level adaptation + session summary + prompt refinement).
+
+> ⚠️ E2E lesson (cost one red CI run, caught before merge): `window.speechSynthesis` is a **read-only accessor** in real Chromium, so `window.speechSynthesis = stub` is silently ignored. Stub browser-API globals with `Object.defineProperty(window, 'speechSynthesis', { value: stub, configurable: true })`. (`window.SpeechRecognition` is undefined by default, so a plain assignment works for it.)
 
 ## Notes
 - Animation is driven by the SpeechSynthesis utterance lifecycle (starts on `onstart`, stops on `onend`/`onerror`), so the robot moves only while actually speaking.
