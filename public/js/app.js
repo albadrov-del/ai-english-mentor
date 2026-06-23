@@ -1,5 +1,5 @@
-// Screen router + UI wiring (Issues #1–#4).
-// Pure logic lives in profiles.js / conversation.js / api.js; persistence in storage.js.
+// Screen router + UI wiring (Issues #1–#5).
+// Pure logic lives in profiles.js / conversation.js / api.js / speech.js; persistence in storage.js.
 import {
   LEVELS,
   createProfile,
@@ -11,8 +11,10 @@ import {
 import { loadProfiles, saveProfiles, loadPin, savePin } from './storage.js';
 import { createSession, appendTurn } from './conversation.js';
 import { sendChat } from './api.js';
+import { getSpeechRecognition, isSynthesisSupported, createMic, speak } from './speech.js';
 
 const $ = (testid) => document.querySelector(`[data-testid="${testid}"]`);
+const SPEECH_LANG = 'en-US';
 
 const screens = {
   home: document.getElementById('screen-home'),
@@ -39,6 +41,8 @@ const els = {
   conversationBack: $('conversation-back'),
   transcript: $('transcript'),
   chatError: $('chat-error'),
+  mic: $('mic-button'),
+  voiceNote: $('voice-unsupported'),
   composer: document.getElementById('composer'),
   input: $('message-input'),
   endSession: $('end-session'),
@@ -49,6 +53,8 @@ let profiles = [];
 let editingId = null;
 let session = null;
 let sending = false;
+let mic = null;
+let voiceOut = false;
 
 function showScreen(name) {
   for (const [key, el] of Object.entries(screens)) el.hidden = key !== name;
@@ -172,7 +178,7 @@ function onDelete() {
   goHome();
 }
 
-// ---- Conversation (Issues #2, #4) ----
+// ---- Conversation (Issues #2, #4, #5) ----
 function renderTranscript() {
   els.transcript.innerHTML = '';
   for (const m of session.messages) {
@@ -198,28 +204,25 @@ function showChatError(msg) {
 function setSending(on) {
   sending = on;
   els.input.disabled = on;
+  if (mic) els.mic.disabled = on;
 }
 
-function openConversation(id) {
-  const profile = findProfile(profiles, id);
-  if (!profile) return;
-  session = createSession(profile);
-  els.greeting.textContent = `Practice session with ${profile.name} (${profile.level})`;
-  clearChatError();
-  renderTranscript();
-  showScreen('conversation');
-  els.input.focus();
+function speakReply(text) {
+  if (!voiceOut || !text) return;
+  speak({
+    text,
+    speechSynthesis: window.speechSynthesis,
+    Utterance: window.SpeechSynthesisUtterance,
+    lang: SPEECH_LANG,
+  });
 }
 
-async function onSend(e) {
-  e.preventDefault();
-  if (!session || sending) return;
-  const text = els.input.value.trim();
-  if (!text) return;
+async function submitText(text) {
+  const trimmed = (text ?? '').trim();
+  if (!session || sending || !trimmed) return;
 
   clearChatError();
-  els.input.value = '';
-  session.messages = appendTurn(session.messages, 'user', text);
+  session.messages = appendTurn(session.messages, 'user', trimmed);
   renderTranscript();
   setSending(true);
 
@@ -231,6 +234,7 @@ async function onSend(e) {
     });
     session.messages = appendTurn(session.messages, 'assistant', reply);
     renderTranscript();
+    speakReply(reply);
   } catch (err) {
     showChatError(
       err && err.status === 401
@@ -243,8 +247,67 @@ async function onSend(e) {
   }
 }
 
-function endSession() {
-  showScreen('summary');
+function onSend(e) {
+  e.preventDefault();
+  const text = els.input.value;
+  els.input.value = '';
+  submitText(text);
+}
+
+function updateMicUI(state) {
+  els.mic.dataset.state = state;
+  els.mic.textContent = state === 'listening' ? '● Listening…' : '🎤 Speak';
+  els.mic.classList.toggle('listening', state === 'listening');
+}
+
+function stopVoice() {
+  if (mic) mic.stop();
+  try {
+    window.speechSynthesis?.cancel();
+  } catch {
+    /* ignore */
+  }
+}
+
+function openConversation(id) {
+  const profile = findProfile(profiles, id);
+  if (!profile) return;
+  session = createSession(profile);
+  els.greeting.textContent = `Practice session with ${profile.name} (${profile.level})`;
+  clearChatError();
+  if (mic) updateMicUI('idle');
+  renderTranscript();
+  showScreen('conversation');
+  els.input.focus();
+}
+
+function leaveConversation(target) {
+  stopVoice();
+  showScreen(target);
+}
+
+function setupVoice() {
+  const Recognition = getSpeechRecognition(window);
+  voiceOut = isSynthesisSupported(window);
+
+  if (Recognition) {
+    mic = createMic({
+      Recognition,
+      lang: SPEECH_LANG,
+      onResult: (text) => submitText(text),
+      onStateChange: updateMicUI,
+      onError: (errType) => {
+        // no-speech / aborted are normal (user paused or stopped) — ignore quietly.
+        if (errType !== 'no-speech' && errType !== 'aborted') {
+          showChatError('Microphone error — please try again or type your message.');
+        }
+      },
+    });
+    els.mic.hidden = false;
+    els.mic.addEventListener('click', () => mic.toggle());
+  } else {
+    els.voiceNote.hidden = false;
+  }
 }
 
 function init() {
@@ -260,10 +323,12 @@ function init() {
   els.form.addEventListener('submit', onSave);
   els.delete.addEventListener('click', onDelete);
   els.editorBack.addEventListener('click', goHome);
-  els.conversationBack.addEventListener('click', () => showScreen('home'));
+  els.conversationBack.addEventListener('click', () => leaveConversation('home'));
   els.composer.addEventListener('submit', onSend);
-  els.endSession.addEventListener('click', endSession);
+  els.endSession.addEventListener('click', () => leaveConversation('summary'));
   els.summaryHome.addEventListener('click', () => showScreen('home'));
+
+  setupVoice();
 }
 
 init();

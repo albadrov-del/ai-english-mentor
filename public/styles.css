@@ -152,3 +152,8 @@ body {
 .settings { margin-top: 1.5rem; color: var(--muted); }
 .settings summary { cursor: pointer; padding: 0.25rem 0; }
 .settings .field { margin-top: 0.75rem; }
+
+/* Voice */
+.voice-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
+.mic-button.listening { background: var(--danger); border-color: var(--danger); color: #fff; }
+.voice-note { font-size: 0.85rem; }
