@@ -1,6 +1,6 @@
 # S2-6 (#26) — Tutor mode + curriculum (headline)
 
-**Status:** 🟡 in progress · **Issue:** #26 · **Branch:** `feat/26-tutor-curriculum` · **PR:** (pending)
+**Status:** ✅ done · **Issue:** #26 · **Merged:** PR #32
 
 ## Done
 - `public/js/curriculum.js` (shared by browser + backend, pure) — 6 seeded sessions
@@ -29,8 +29,10 @@ The proxy stays closed: the client sends only `sessionId` + `phase`; the backend
 from its own curriculum. An API test asserts injected `tutor.goal/title` text never reaches the
 system prompt.
 
-## Next (resume here)
-- [ ] Push, open PR `Closes #26`, confirm CI green, self-merge → flip PROGRESS S2-6 to ✅ →
-      **Sprint 2 complete** (mark the Sprint 2 section done in PROGRESS.md) → stop the loop.
-- [ ] Owner: try "Lessons → Traveling with the family" on the live app; confirm a natural, phased,
-      level-appropriate session ending in an encouraging recap.
+## Outcome
+✅ **Done.** Merged via PR #32; CI green (E2E ×2, Unit ×2); auto-deployed to Render.
+**This completes Sprint 2 (v1.1) — all of #21–#26.**
+
+## Owner verification (on the live app)
+- Try **Lessons → Traveling with the family**; confirm a natural, phased, level-appropriate session
+  ending in an encouraging recap (the tutor should never announce phase names).
