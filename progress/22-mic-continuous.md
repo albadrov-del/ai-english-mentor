@@ -1,6 +1,6 @@
 # S2-2 (#22) — Mic continuous capture + silence-timeout
 
-**Status:** 🟡 in progress · **Issue:** #22 · **Branch:** `feat/22-mic-continuous` · **PR:** #28
+**Status:** ✅ done · **Issue:** #22 · **Merged:** PR #28
 
 ## Done
 - `public/js/speech.js` — `createMic` rewritten: `continuous` + `interimResults`; a turn is
@@ -24,6 +24,7 @@ hands-free, to avoid the TTS↔mic feedback loop and keep scope tight. Auto-rest
 *involuntary* mid-turn ends, satisfying the DoD ("auto-restart on onend until explicit stop")
 without an endless silent loop.
 
-## Next (resume here)
-- [ ] Confirm CI green on PR #28 (`gh pr checks 28`), self-merge → flip PROGRESS S2-2 to ✅ →
-      continue to **S2-3 (#23)** — natural TTS (voice/rate/pitch in profile settings).
+## Outcome
+✅ **Done.** Merged via PR #28; CI green (E2E ×2, Unit ×2); auto-deployed to Render.
+Owner to confirm on Android Chrome that natural pauses no longer cut speech off.
+Next: **S2-3 (#23)** — natural TTS (voice/rate/pitch in profile settings).
