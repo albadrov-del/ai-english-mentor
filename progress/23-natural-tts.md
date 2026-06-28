@@ -1,6 +1,6 @@
 # S2-3 (#23) — More natural TTS (voice / rate / pitch)
 
-**Status:** 🟡 in progress · **Issue:** #23 · **Branch:** `feat/23-natural-tts` · **PR:** (pending)
+**Status:** ✅ done · **Issue:** #23 · **Merged:** PR #29
 
 ## Done
 - `public/js/speech.js`
@@ -26,6 +26,7 @@
   spec's "minimal intermediary" (§4) and touches §8 (heavier AV beyond v1). Recommended as a **follow-up
   issue for the owner to approve** — not built here.
 
-## Next (resume here)
-- [ ] Push, open PR `Closes #23`, confirm CI green (`gh pr checks <PR>`), self-merge → flip PROGRESS S2-3
-      to ✅ → continue to **S2-4 (#24)** — "Start conversation" button on the profile screen.
+## Outcome
+✅ **Done.** Merged via PR #29; CI green (E2E ×2, Unit ×2); auto-deployed to Render.
+Owner can verify on-device: edit a profile → **Voice (text-to-speech)** → pick a voice / adjust
+speed & pitch; the tutor uses it on the next reply. Next: **S2-4 (#24)** — "Start conversation" button.
