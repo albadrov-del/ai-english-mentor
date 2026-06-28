@@ -2,16 +2,27 @@
 // Pure logic lives in profiles.js / conversation.js / api.js / speech.js; persistence in storage.js.
 import {
   LEVELS,
+  VOICE_RATE,
+  VOICE_PITCH,
   createProfile,
   validateProfile,
   upsertProfile,
   deleteProfile,
   findProfile,
+  withVoiceDefaults,
 } from './profiles.js';
 import { loadProfiles, saveProfiles, loadPin, savePin } from './storage.js';
 import { createSession, appendTurn } from './conversation.js';
 import { sendChat, sendSummary } from './api.js';
-import { getSpeechRecognition, isSynthesisSupported, createMic, speak } from './speech.js';
+import {
+  getSpeechRecognition,
+  isSynthesisSupported,
+  createMic,
+  speak,
+  getVoices,
+  pickVoice,
+  listEnglishVoices,
+} from './speech.js';
 import { log, mountDebugPanel } from './log.js';
 
 const $ = (testid) => document.querySelector(`[data-testid="${testid}"]`);
@@ -36,6 +47,11 @@ const els = {
   name: $('profile-name'),
   level: $('profile-level'),
   interests: $('profile-interests'),
+  voice: $('profile-voice'),
+  rate: $('profile-rate'),
+  pitch: $('profile-pitch'),
+  rateValue: $('rate-value'),
+  pitchValue: $('pitch-value'),
   delete: $('delete-profile'),
   editorBack: $('editor-back'),
   errName: $('error-name'),
@@ -61,6 +77,7 @@ let session = null;
 let sending = false;
 let mic = null;
 let voiceOut = false;
+let availableVoices = [];
 
 function showScreen(name) {
   for (const [key, el] of Object.entries(screens)) el.hidden = key !== name;
@@ -127,14 +144,43 @@ function clearErrors() {
 function openEditor(id = null) {
   editingId = id;
   clearErrors();
-  const existing = id ? findProfile(profiles, id) : null;
+  const found = id ? findProfile(profiles, id) : null;
+  const existing = found ? withVoiceDefaults(found) : null;
   els.editorTitle.textContent = existing ? 'Edit profile' : 'New profile';
   els.name.value = existing ? existing.name : '';
   els.level.value = existing ? existing.level : '';
   els.interests.value = existing ? existing.interests : '';
+  els.rate.value = existing ? existing.rate : VOICE_RATE.default;
+  els.pitch.value = existing ? existing.pitch : VOICE_PITCH.default;
+  populateVoiceOptions(existing ? existing.voiceURI : '');
+  syncRangeLabels();
   els.delete.hidden = !existing;
   showScreen('editor');
   els.name.focus();
+}
+
+// Fill the voice <select> with English voices (best-ranked first) + an Automatic
+// option. Voices are device-provided; a saved voice missing on this device → Automatic.
+function populateVoiceOptions(selectedURI = '') {
+  availableVoices = getVoices(window);
+  els.voice.innerHTML = '';
+  const auto = document.createElement('option');
+  auto.value = '';
+  auto.textContent = 'Automatic (best available)';
+  els.voice.appendChild(auto);
+  for (const v of listEnglishVoices(availableVoices, SPEECH_LANG)) {
+    const opt = document.createElement('option');
+    opt.value = v.voiceURI;
+    opt.textContent = `${v.name} (${v.lang})`;
+    els.voice.appendChild(opt);
+  }
+  els.voice.value = selectedURI;
+  if (els.voice.value !== selectedURI) els.voice.value = ''; // saved voice gone → Automatic
+}
+
+function syncRangeLabels() {
+  els.rateValue.textContent = Number(els.rate.value).toFixed(1);
+  els.pitchValue.textContent = Number(els.pitch.value).toFixed(1);
 }
 
 function goHome() {
@@ -146,18 +192,17 @@ function goHome() {
 function onSave(e) {
   e.preventDefault();
   clearErrors();
+  const fields = {
+    name: els.name.value.trim(),
+    level: els.level.value,
+    interests: els.interests.value.trim(),
+    voiceURI: els.voice.value,
+    rate: Number(els.rate.value),
+    pitch: Number(els.pitch.value),
+  };
   const normalized = editingId
-    ? {
-        id: editingId,
-        name: els.name.value.trim(),
-        level: els.level.value,
-        interests: els.interests.value.trim(),
-      }
-    : createProfile({
-        name: els.name.value,
-        level: els.level.value,
-        interests: els.interests.value,
-      });
+    ? withVoiceDefaults({ id: editingId, ...fields })
+    : createProfile(fields);
 
   const { valid, errors } = validateProfile(normalized);
   if (!valid) {
@@ -220,11 +265,15 @@ function setSpeaking(on) {
 
 function speakReply(text) {
   if (!voiceOut || !text) return;
+  const p = withVoiceDefaults(session?.profile ?? {});
   speak({
     text,
     speechSynthesis: window.speechSynthesis,
     Utterance: window.SpeechSynthesisUtterance,
     lang: SPEECH_LANG,
+    voice: pickVoice(getVoices(window), { voiceURI: p.voiceURI, lang: SPEECH_LANG }),
+    rate: p.rate,
+    pitch: p.pitch,
     onStart: () => setSpeaking(true),
     onEnd: () => setSpeaking(false),
   });
@@ -380,6 +429,8 @@ function init() {
 
   els.newBtn.addEventListener('click', () => openEditor(null));
   els.form.addEventListener('submit', onSave);
+  els.rate.addEventListener('input', syncRangeLabels);
+  els.pitch.addEventListener('input', syncRangeLabels);
   els.delete.addEventListener('click', onDelete);
   els.editorBack.addEventListener('click', goHome);
   els.conversationBack.addEventListener('click', () => leaveConversation('home'));
@@ -388,6 +439,15 @@ function init() {
   els.summaryHome.addEventListener('click', () => showScreen('home'));
 
   setupVoice();
+  // TTS voices often load asynchronously — refresh the cache when they arrive.
+  availableVoices = getVoices(window);
+  try {
+    window.speechSynthesis?.addEventListener?.('voiceschanged', () => {
+      availableVoices = getVoices(window);
+    });
+  } catch {
+    /* ignore — synthesis not available */
+  }
   registerServiceWorker();
   mountDebugPanel(window);
   log.debug('app ready');
