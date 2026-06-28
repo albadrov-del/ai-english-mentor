@@ -36,7 +36,7 @@ Spec: [Sprint2_addingCurriculum.md](Specificatio/Sprint%202%20-%20adding%20curri
 | S2-1 | Logging / observability | ✅ done | [#21](https://github.com/albadrov-del/ai-english-mentor/issues/21) | [21-logging.md](progress/21-logging.md) |
 | S2-2 | Mic continuous capture + silence-timeout | ✅ done | [#22](https://github.com/albadrov-del/ai-english-mentor/issues/22) | [22-mic-continuous.md](progress/22-mic-continuous.md) |
 | S2-3 | More natural TTS (voice / rate / pitch) | ✅ done | [#23](https://github.com/albadrov-del/ai-english-mentor/issues/23) | [23-natural-tts.md](progress/23-natural-tts.md) |
-| S2-4 | "Start conversation" button | ⬜ TODO | [#24](https://github.com/albadrov-del/ai-english-mentor/issues/24) | — |
+| S2-4 | "Start conversation" button | 🟡 in progress | [#24](https://github.com/albadrov-del/ai-english-mentor/issues/24) | [24-start-button.md](progress/24-start-button.md) |
 | S2-5 | Save conversations (history + resume) | ⬜ TODO | [#25](https://github.com/albadrov-del/ai-english-mentor/issues/25) | — |
 | S2-6 | Tutor mode + curriculum | ⬜ TODO | [#26](https://github.com/albadrov-del/ai-english-mentor/issues/26) | — |
 
