@@ -1,6 +1,6 @@
 # S2-5 (#25) — Save conversations (history + resume)
 
-**Status:** 🟡 in progress · **Issue:** #25 · **Branch:** `feat/25-save-conversations` · **PR:** (pending)
+**Status:** ✅ done · **Issue:** #25 · **Merged:** PR #31
 
 ## Done
 - `public/js/history.js` (pure, unit-tested) — versioned records
@@ -26,6 +26,7 @@ conversation therefore **compacts** it (recap + recent) once a new turn is sent 
 storage/tokens bounded; short chats (the common case) keep full fidelity. Resume itself does **not**
 persist, so opening history never mutates a saved chat until the user actually continues it.
 
-## Next (resume here)
-- [ ] Push, open PR `Closes #25`, confirm CI green, self-merge → flip PROGRESS S2-5 to ✅ → continue to
-      **S2-6 (#26)** — tutor mode + curriculum (depends on this; reuses history for per-session progress).
+## Outcome
+✅ **Done.** Merged via PR #31; CI green (E2E ×2, Unit ×2); auto-deployed to Render.
+Next: **S2-6 (#26)** — tutor mode + curriculum (final Sprint 2 issue; reuses this history for
+per-session progress).
