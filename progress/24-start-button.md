@@ -1,6 +1,6 @@
 # S2-4 (#24) — "Start conversation" button
 
-**Status:** 🟡 in progress · **Issue:** #24 · **Branch:** `feat/24-start-button` · **PR:** (pending)
+**Status:** ✅ done · **Issue:** #24 · **Merged:** PR #30
 
 ## Done
 - `public/js/app.js` `renderHome()` — each profile item now renders an explicit
@@ -17,6 +17,6 @@
 ## Notes
 - No new screen (spec screen 1), per DoD. The button reuses `openConversation()`.
 
-## Next (resume here)
-- [ ] Push, open PR `Closes #24`, confirm CI green (`gh pr checks <PR>`), self-merge → flip PROGRESS
-      S2-4 to ✅ → continue to **S2-5 (#25)** — save conversations (history + resume), `public/js/history.js`.
+## Outcome
+✅ **Done.** Merged via PR #30; CI green (E2E ×2, Unit ×2); auto-deployed to Render.
+Next: **S2-5 (#25)** — save conversations (history + resume), new `public/js/history.js`.
