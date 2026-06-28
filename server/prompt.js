@@ -1,5 +1,6 @@
 // Pure backend logic: builds the tutor system prompt, the summary prompt, and checks the PIN.
 // No Express, no SDK — unit-testable. Spec §3/§5/§7.4.
+import { PHASES } from '../public/js/curriculum.js';
 
 export const MODEL = 'claude-haiku-4-5-20251001';
 
@@ -40,6 +41,32 @@ Rules:
 - When they make a mistake, gently model the correct form in your reply instead of stopping to lecture. Don't correct every small thing — keep it encouraging.
 - Keep your turns short (this is spoken, not written): 1–3 sentences usually.
 - When the user signals they want to stop, give a short, encouraging summary: what went well + 2–3 things to practice.`;
+}
+
+/**
+ * Tutor-mode system prompt: the base prompt (pedagogy + level + profile) EXTENDED with a
+ * private lesson guide from the curriculum (spec §3/§5 — phases steer the tutor, they are not
+ * announced and it stays a conversation, not a test). `session` comes from the backend's own
+ * curriculum (server resolves it by id), so no lesson text is passed through from the client.
+ */
+export function buildTutorPrompt(profile, session, phase) {
+  const base = buildSystemPrompt(profile);
+  if (!session || typeof session !== 'object') return base;
+
+  const ph = PHASES.includes(phase) ? phase : PHASES[0];
+  const vocab = Array.isArray(session.vocab) ? session.vocab.join(', ') : '';
+  const phrases = Array.isArray(session.phrases) ? session.phrases.join('; ') : '';
+  const guide = session.phases?.[ph];
+  const guideText = Array.isArray(guide) ? guide.join(' / ') : guide ?? '';
+
+  return `${base}
+
+LESSON CONTEXT — a private guide for you only. Do NOT read it aloud, and never announce phases or steps; just steer the conversation naturally.
+Topic: ${session.title}. Lesson goal: ${session.goal}
+Target vocabulary to weave in when it fits: ${vocab}
+Useful phrases to model: ${phrases}
+Right now you are around the "${ph}" stage: ${guideText}
+Move between stages smoothly and conversationally. Keep it a friendly chat, not a test — gently model corrections as you go. When the learner wants to stop, give the short encouraging recap (what went well + 2–3 things to practice).`;
 }
 
 /** System prompt for the end-of-session summary (spec §7.4). */

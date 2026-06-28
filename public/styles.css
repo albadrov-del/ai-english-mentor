@@ -116,6 +116,38 @@ body {
 }
 .history-name { font-weight: 600; }
 .history-meta { font-size: 0.8rem; color: var(--muted); }
+
+/* Curriculum / lessons (#26) */
+.curriculum-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.75rem; }
+.curriculum-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.curriculum-open {
+  width: 100%;
+  display: grid;
+  gap: 0.35rem;
+  background: transparent;
+  border: 0;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  padding: 0.85rem;
+}
+.curriculum-name { font-weight: 600; }
+.curriculum-goal { font-size: 0.85rem; color: var(--muted); }
+.curriculum-badges { display: flex; gap: 0.4rem; }
+.badge {
+  font-size: 0.72rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.05rem 0.55rem;
+  color: var(--muted);
+}
+.badge-light { color: #3fb950; border-color: #3fb950; }
+.badge-challenging { color: #d29922; border-color: #d29922; }
 .profile-name { font-weight: 600; }
 .profile-level {
   font-size: 0.85rem;
