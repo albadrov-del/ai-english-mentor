@@ -6,18 +6,61 @@ import {
   speak,
 } from '../../public/js/speech.js';
 
-function FakeRecognitionFactory() {
+// A single-slot fake scheduler. createMic only ever keeps one silence timer at a
+// time (it clears before re-arming), so one pending slot models it faithfully.
+function fakeTimers() {
+  let pending = null;
+  let sets = 0;
+  let clears = 0;
+  return {
+    set: (fn) => {
+      pending = fn;
+      sets += 1;
+      return sets;
+    },
+    clear: () => {
+      if (pending != null) clears += 1;
+      pending = null;
+    },
+    flush() {
+      const fn = pending;
+      pending = null;
+      if (fn) fn();
+    },
+    isPending: () => pending != null,
+    stats: () => ({ sets, clears }),
+  };
+}
+
+// Minimal SpeechRecognition stub; stop() fires onend like the real API does.
+function RecognitionFactory() {
   function Fake() {
     this.start = jest.fn();
     this.stop = jest.fn(() => {
       if (this.onend) this.onend();
     });
     Fake.last = this;
+    Fake.instances.push(this);
   }
+  Fake.instances = [];
   return Fake;
 }
 
-describe('createMic state machine', () => {
+// Result-list builders mirroring the cumulative shape of SpeechRecognitionResultList.
+const final = (t) => {
+  const r = [{ transcript: t }];
+  r.isFinal = true;
+  return r;
+};
+const partial = (t) => {
+  const r = [{ transcript: t }];
+  r.isFinal = false;
+  return r;
+};
+// Emit an onresult event whose newly-changed results begin at `from`.
+const emit = (rec, from, results) => rec.onresult({ resultIndex: from, results });
+
+describe('createMic — continuous capture + silence timeout', () => {
   test('unsupported when no Recognition constructor', () => {
     const mic = createMic({});
     expect(mic.supported).toBe(false);
@@ -25,47 +68,129 @@ describe('createMic state machine', () => {
     expect(mic.getState()).toBe('idle');
   });
 
-  test('start moves to listening and calls recognition.start()', () => {
-    const Fake = FakeRecognitionFactory();
+  test('start enters listening with continuous + interim recognition', () => {
+    const Fake = RecognitionFactory();
     const states = [];
-    const mic = createMic({ Recognition: Fake, onStateChange: (s) => states.push(s) });
+    const mic = createMic({ Recognition: Fake, timers: fakeTimers(), onStateChange: (s) => states.push(s) });
     mic.start();
     expect(mic.getState()).toBe('listening');
     expect(states).toContain('listening');
+    expect(Fake.last.continuous).toBe(true);
+    expect(Fake.last.interimResults).toBe(true);
     expect(Fake.last.start).toHaveBeenCalled();
   });
 
-  test('onresult delivers a trimmed transcript', () => {
-    const Fake = FakeRecognitionFactory();
+  test('merges interim into one utterance; delivers only after the silence timeout', () => {
+    const Fake = RecognitionFactory();
+    const timers = fakeTimers();
     const results = [];
-    const mic = createMic({ Recognition: Fake, onResult: (t) => results.push(t) });
+    const interims = [];
+    const mic = createMic({
+      Recognition: Fake,
+      timers,
+      onResult: (t) => results.push(t),
+      onInterim: (t) => interims.push(t),
+    });
     mic.start();
-    Fake.last.onresult({ results: [[{ transcript: '  Hello there ' }]] });
-    expect(results).toEqual(['Hello there']);
-  });
+    emit(Fake.last, 0, [partial('hel')]);
+    emit(Fake.last, 0, [partial('hello the')]);
+    emit(Fake.last, 0, [final('hello there')]);
 
-  test('onend returns to idle', () => {
-    const Fake = FakeRecognitionFactory();
-    const mic = createMic({ Recognition: Fake });
-    mic.start();
-    Fake.last.onend();
+    expect(results).toEqual([]); // nothing sent while the user is still talking
+    expect(interims[interims.length - 1]).toBe('hello there');
+    expect(timers.isPending()).toBe(true);
+
+    timers.flush(); // the quiet period elapses
+    expect(results).toEqual(['hello there']);
     expect(mic.getState()).toBe('idle');
   });
 
-  test('onerror is surfaced and the session ends idle (no crash)', () => {
-    const Fake = FakeRecognitionFactory();
+  test('merges finals captured across pauses', () => {
+    const Fake = RecognitionFactory();
+    const timers = fakeTimers();
+    const results = [];
+    const mic = createMic({ Recognition: Fake, timers, onResult: (t) => results.push(t) });
+    mic.start();
+    emit(Fake.last, 0, [final('hello')]);
+    emit(Fake.last, 1, [final('hello'), final('there')]); // next phrase at the next index
+    timers.flush();
+    expect(results).toEqual(['hello there']);
+  });
+
+  test('re-arms (clears then sets) the silence timer on every result', () => {
+    const Fake = RecognitionFactory();
+    const timers = fakeTimers();
+    const mic = createMic({ Recognition: Fake, timers });
+    mic.start();
+    emit(Fake.last, 0, [partial('a')]);
+    emit(Fake.last, 0, [partial('ab')]);
+    const { sets, clears } = timers.stats();
+    expect(sets).toBe(2);
+    expect(clears).toBeGreaterThanOrEqual(1); // prior timer cleared before re-arming
+  });
+
+  test('auto-restarts on an involuntary onend while a turn is in progress', () => {
+    const Fake = RecognitionFactory();
+    const timers = fakeTimers();
+    const results = [];
+    const mic = createMic({ Recognition: Fake, timers, onResult: (t) => results.push(t) });
+    mic.start();
+    const first = Fake.last;
+    emit(first, 0, [final('hello')]); // captured; silence armed
+    first.onend(); // involuntary end mid-turn (e.g. Android 60s cap)
+
+    expect(Fake.instances).toHaveLength(2); // restarted with a fresh recognizer
+    expect(Fake.last).not.toBe(first);
+    expect(Fake.last.start).toHaveBeenCalled();
+    expect(mic.getState()).toBe('listening'); // never dropped out of listening
+
+    timers.flush(); // silence finally elapses on the restarted recognizer
+    expect(results).toEqual(['hello']);
+    expect(mic.getState()).toBe('idle');
+  });
+
+  test('ends idle (no restart) when recognition ends before any speech', () => {
+    const Fake = RecognitionFactory();
+    const mic = createMic({ Recognition: Fake, timers: fakeTimers() });
+    mic.start();
+    Fake.last.onend(); // no results captured (no-speech)
+    expect(mic.getState()).toBe('idle');
+    expect(Fake.instances).toHaveLength(1); // did not restart into a silent loop
+  });
+
+  test('explicit stop finalizes immediately, sending the partial transcript', () => {
+    const Fake = RecognitionFactory();
+    const results = [];
+    const mic = createMic({ Recognition: Fake, timers: fakeTimers(), onResult: (t) => results.push(t) });
+    mic.start();
+    emit(Fake.last, 0, [partial('half a sentence')]); // interim only, never final
+    mic.stop();
+    expect(results).toEqual(['half a sentence']);
+    expect(mic.getState()).toBe('idle');
+  });
+
+  test('stop with no speech goes idle and sends nothing', () => {
+    const Fake = RecognitionFactory();
+    const results = [];
+    const mic = createMic({ Recognition: Fake, timers: fakeTimers(), onResult: (t) => results.push(t) });
+    mic.start();
+    mic.stop();
+    expect(results).toEqual([]);
+    expect(mic.getState()).toBe('idle');
+  });
+
+  test('forwards recognition errors', () => {
+    const Fake = RecognitionFactory();
     const errors = [];
-    const mic = createMic({ Recognition: Fake, onError: (e) => errors.push(e) });
+    const mic = createMic({ Recognition: Fake, timers: fakeTimers(), onError: (e) => errors.push(e) });
     mic.start();
     Fake.last.onerror({ error: 'no-speech' });
-    Fake.last.onend();
     expect(errors).toEqual(['no-speech']);
-    expect(mic.getState()).toBe('idle');
   });
 
   test('toggle starts then stops', () => {
-    const Fake = FakeRecognitionFactory();
-    const mic = createMic({ Recognition: Fake });
+    const Fake = RecognitionFactory();
+    const mic = createMic({ Recognition: Fake, timers: fakeTimers() });
     mic.toggle();
     expect(mic.getState()).toBe('listening');
     mic.toggle();

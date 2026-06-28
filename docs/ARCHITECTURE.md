@@ -52,6 +52,18 @@ Therefore: **press-to-talk / tap-to-toggle discrete utterances** (not always-on 
 handle `onend`/`onerror`, and show a fallback message on unsupported browsers. `SpeechSynthesis`
 (TTS) is broadly supported.
 
+> **Superseded by Sprint 2 — Issue #22 (2026-06-28).** The discrete-utterance call cut users
+> off on natural pauses (the default recognizer finalizes after ~1s of silence). `createMic`
+> now runs in **`continuous` mode with `interimResults`**: a turn is assembled from many result
+> events and finalized — sent to the model — only after a **configurable silence timeout**
+> (`silenceMs`, default 3000) or an explicit Stop. The very quirks noted above are handled rather
+> than avoided: an involuntary `onend` mid-turn (the 60s cap, a transient `no-speech`) **auto-restarts**
+> the recognizer so the turn continues, until the user stops or the silence timeout fires. A live
+> "still listening" indicator + interim transcript make capture visible. Recognition stays off
+> during TTS playback (the turn is already finalized), so the tutor's voice can't feed back into the mic.
+> Rationale: the spec (§6) wants natural spoken practice — tolerating pauses matters more than the
+> simplicity of discrete capture, and the failure mode is well-contained by the restart guard.
+
 ## Intentionally out of scope for v1 (avoid over-engineering)
 No framework · no database · no login/accounts · no state-management library · no prompt caching ·
 no streaming · no TypeScript build step · no microservices.

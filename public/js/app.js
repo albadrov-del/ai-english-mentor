@@ -16,6 +16,8 @@ import { log, mountDebugPanel } from './log.js';
 
 const $ = (testid) => document.querySelector(`[data-testid="${testid}"]`);
 const SPEECH_LANG = 'en-US';
+const MIC_SILENCE_MS = 3000; // quiet time before a spoken turn is finalized (#22)
+const LISTENING_HINT = 'Listening… speak naturally; tap to stop.';
 
 const screens = {
   home: document.getElementById('screen-home'),
@@ -44,6 +46,7 @@ const els = {
   transcript: $('transcript'),
   chatError: $('chat-error'),
   mic: $('mic-button'),
+  micStatus: $('mic-status'),
   voiceNote: $('voice-unsupported'),
   composer: document.getElementById('composer'),
   input: $('message-input'),
@@ -266,9 +269,19 @@ function onSend(e) {
 }
 
 function updateMicUI(state) {
+  const listening = state === 'listening';
   els.mic.dataset.state = state;
-  els.mic.textContent = state === 'listening' ? '● Listening…' : '🎤 Speak';
-  els.mic.classList.toggle('listening', state === 'listening');
+  els.mic.textContent = listening ? '● Listening…' : '🎤 Speak';
+  els.mic.classList.toggle('listening', listening);
+  els.micStatus.hidden = !listening;
+  if (!listening) els.micStatus.textContent = '';
+  else if (!els.micStatus.textContent) els.micStatus.textContent = LISTENING_HINT;
+}
+
+// Live partial transcript while the mic is open — shows the app is still capturing.
+function showInterim(partial) {
+  if (!mic || mic.getState() !== 'listening') return;
+  els.micStatus.textContent = partial ? `“${partial}”` : LISTENING_HINT;
 }
 
 function stopVoice() {
@@ -330,7 +343,9 @@ function setupVoice() {
     mic = createMic({
       Recognition,
       lang: SPEECH_LANG,
+      silenceMs: MIC_SILENCE_MS,
       onResult: (text) => submitText(text),
+      onInterim: showInterim,
       onStateChange: updateMicUI,
       onError: (errType) => {
         log.warn('mic.error', errType);
