@@ -109,6 +109,17 @@
       </form>
     </section>
 
+    <!-- Conversation history (#25) -->
+    <section id="screen-history" class="screen" data-testid="screen-history" hidden>
+      <div class="screen-head">
+        <button type="button" class="btn btn-small" data-testid="history-back">← Home</button>
+        <button type="button" class="btn btn-small btn-primary" data-testid="history-new">+ New conversation</button>
+      </div>
+      <h2 data-testid="history-title">Past conversations</h2>
+      <ul class="history-list" data-testid="history-list"></ul>
+      <p class="empty-hint" data-testid="history-empty" hidden>No saved conversations yet — start one to see it here.</p>
+    </section>
+
     <!-- Session summary (placeholder — real summary in #7) -->
     <section id="screen-summary" class="screen" data-testid="summary-screen" hidden>
       <h2>Session summary</h2>

@@ -11,8 +11,19 @@ import {
   findProfile,
   withVoiceDefaults,
 } from './profiles.js';
-import { loadProfiles, saveProfiles, loadPin, savePin } from './storage.js';
+import { loadProfiles, saveProfiles, loadPin, savePin, loadHistory, saveHistory } from './storage.js';
 import { createSession, appendTurn } from './conversation.js';
+import {
+  createConversation,
+  updateConversation,
+  upsertConversation,
+  deleteConversation,
+  findConversation,
+  listByProfile,
+  migrateConversation,
+  selectResumeContext,
+  buildResumeMessages,
+} from './history.js';
 import { sendChat, sendSummary } from './api.js';
 import {
   getSpeechRecognition,
@@ -34,6 +45,7 @@ const screens = {
   home: document.getElementById('screen-home'),
   editor: document.getElementById('screen-editor'),
   conversation: document.getElementById('screen-conversation'),
+  history: document.getElementById('screen-history'),
   summary: document.getElementById('screen-summary'),
 };
 
@@ -70,11 +82,19 @@ const els = {
   endSession: $('end-session'),
   summaryHome: $('summary-home'),
   summaryBody: $('summary-body'),
+  historyList: $('history-list'),
+  historyEmpty: $('history-empty'),
+  historyTitle: $('history-title'),
+  historyBack: $('history-back'),
+  historyNew: $('history-new'),
 };
 
 let profiles = [];
+let history = [];
 let editingId = null;
 let session = null;
+let currentConvoId = null; // the saved conversation the live session maps to
+let historyProfileId = null; // whose history the History screen is showing
 let sending = false;
 let mic = null;
 let voiceOut = false;
@@ -129,6 +149,13 @@ function renderHome() {
     start.textContent = '▶ Start conversation';
     start.addEventListener('click', () => openConversation(p.id));
 
+    const hist = document.createElement('button');
+    hist.type = 'button';
+    hist.className = 'btn btn-small';
+    hist.dataset.testid = 'history-profile';
+    hist.textContent = 'History';
+    hist.addEventListener('click', () => openHistory(p.id));
+
     const edit = document.createElement('button');
     edit.type = 'button';
     edit.className = 'btn btn-small';
@@ -138,7 +165,7 @@ function renderHome() {
 
     const actions = document.createElement('div');
     actions.className = 'profile-actions';
-    actions.append(start, edit);
+    actions.append(start, hist, edit);
 
     li.append(select, actions);
     els.list.appendChild(li);
@@ -300,6 +327,7 @@ async function submitText(text) {
   clearChatError();
   session.messages = appendTurn(session.messages, 'user', trimmed);
   renderTranscript();
+  persistSession(); // keep the user turn even if the reply fails
   setSending(true);
 
   try {
@@ -310,6 +338,7 @@ async function submitText(text) {
     });
     session.messages = appendTurn(session.messages, 'assistant', reply);
     renderTranscript();
+    persistSession();
     speakReply(reply);
   } catch (err) {
     showChatError(
@@ -356,9 +385,19 @@ function stopVoice() {
   setSpeaking(false);
 }
 
-function openConversation(id) {
-  const profile = findProfile(profiles, id);
-  if (!profile) return;
+// Save the live session as a conversation (created on first turn, updated thereafter).
+function persistSession() {
+  if (!session || session.messages.length === 0) return;
+  const existing = currentConvoId ? findConversation(history, currentConvoId) : null;
+  const convo = existing
+    ? updateConversation(existing, session.messages)
+    : createConversation(session.profile, session.messages);
+  currentConvoId = convo.id;
+  history = upsertConversation(history, convo);
+  saveHistory(history);
+}
+
+function startConversation(profile) {
   session = createSession(profile);
   els.greeting.textContent = `Practice session with ${profile.name} (${profile.level})`;
   clearChatError();
@@ -367,6 +406,90 @@ function openConversation(id) {
   renderTranscript();
   showScreen('conversation');
   els.input.focus();
+}
+
+// Start a NEW conversation for a profile.
+function openConversation(id) {
+  const profile = findProfile(profiles, id);
+  if (!profile) return;
+  currentConvoId = null;
+  startConversation(profile);
+}
+
+// ---- History (Issue #25) ----
+function openHistory(profileId) {
+  historyProfileId = profileId;
+  renderHistory();
+  showScreen('history');
+}
+
+function renderHistory() {
+  const profile = findProfile(profiles, historyProfileId);
+  els.historyTitle.textContent = profile ? `Past conversations — ${profile.name}` : 'Past conversations';
+  const items = listByProfile(history, historyProfileId);
+  els.historyList.innerHTML = '';
+  for (const c of items) {
+    const li = document.createElement('li');
+    li.className = 'history-item';
+    li.dataset.testid = 'history-item';
+    li.dataset.id = c.id;
+
+    const open = document.createElement('button');
+    open.type = 'button';
+    open.className = 'history-open';
+    open.dataset.testid = 'history-continue';
+    const when = new Date(c.updatedAt || c.createdAt || Date.now()).toLocaleDateString();
+    open.innerHTML =
+      `<span class="history-name">${escapeHtml(c.title)}</span>` +
+      `<span class="history-meta">${escapeHtml(c.level || '')} · ${escapeHtml(when)}</span>`;
+    open.addEventListener('click', () => resumeConversation(c.id));
+
+    const del = document.createElement('button');
+    del.type = 'button';
+    del.className = 'btn btn-small btn-danger';
+    del.dataset.testid = 'history-delete';
+    del.textContent = 'Delete';
+    del.addEventListener('click', () => {
+      history = deleteConversation(history, c.id);
+      saveHistory(history);
+      renderHistory();
+    });
+
+    li.append(open, del);
+    els.historyList.appendChild(li);
+  }
+  els.historyEmpty.hidden = items.length > 0;
+}
+
+// Continue a saved conversation. Long ones are compacted: summarize the older part
+// (via the proxy) and keep the recent turns; short ones resume verbatim.
+async function resumeConversation(convoId) {
+  const convo = findConversation(history, convoId);
+  if (!convo) return;
+  const profile = findProfile(profiles, convo.profileId);
+  if (!profile) return;
+
+  currentConvoId = convoId;
+  const { needsSummary, older, recent } = selectResumeContext(convo.messages);
+  startConversation(profile);
+
+  if (!needsSummary) {
+    session.messages = buildResumeMessages(recent, '');
+    renderTranscript();
+    return;
+  }
+
+  // Summarize the older part for a brief recap, then resume.
+  els.greeting.textContent = `Resuming with ${profile.name} (${profile.level})…`;
+  let recap = '';
+  try {
+    recap = await sendSummary({ profile, messages: older, pin: loadPin() });
+  } catch {
+    recap = '';
+  }
+  session.messages = buildResumeMessages(recent, recap);
+  els.greeting.textContent = `Practice session with ${profile.name} (${profile.level})`;
+  renderTranscript();
 }
 
 function leaveConversation(target) {
@@ -434,6 +557,7 @@ function registerServiceWorker() {
 function init() {
   populateLevels();
   profiles = loadProfiles();
+  history = loadHistory().map(migrateConversation);
   renderHome();
   showScreen('home');
 
@@ -450,6 +574,8 @@ function init() {
   els.composer.addEventListener('submit', onSend);
   els.endSession.addEventListener('click', endSession);
   els.summaryHome.addEventListener('click', () => showScreen('home'));
+  els.historyBack.addEventListener('click', goHome);
+  els.historyNew.addEventListener('click', () => openConversation(historyProfileId));
 
   setupVoice();
   // TTS voices often load asynchronously — refresh the cache when they arrive.
