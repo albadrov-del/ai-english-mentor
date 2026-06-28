@@ -40,6 +40,7 @@ const screens = {
 const els = {
   list: $('profile-list'),
   emptyHint: $('empty-hint'),
+  listHint: $('list-hint'),
   newBtn: $('new-profile'),
   pinInput: $('pin-input'),
   form: document.getElementById('profile-form'),
@@ -121,6 +122,13 @@ function renderHome() {
       `<span class="profile-level">${escapeHtml(p.level)}</span>`;
     select.addEventListener('click', () => openConversation(p.id));
 
+    const start = document.createElement('button');
+    start.type = 'button';
+    start.className = 'btn btn-small btn-primary';
+    start.dataset.testid = 'start-profile';
+    start.textContent = '▶ Start conversation';
+    start.addEventListener('click', () => openConversation(p.id));
+
     const edit = document.createElement('button');
     edit.type = 'button';
     edit.className = 'btn btn-small';
@@ -128,10 +136,15 @@ function renderHome() {
     edit.textContent = 'Edit';
     edit.addEventListener('click', () => openEditor(p.id));
 
-    li.append(select, edit);
+    const actions = document.createElement('div');
+    actions.className = 'profile-actions';
+    actions.append(start, edit);
+
+    li.append(select, actions);
     els.list.appendChild(li);
   }
   els.emptyHint.hidden = profiles.length > 0;
+  els.listHint.hidden = profiles.length === 0;
 }
 
 function clearErrors() {

@@ -45,6 +45,28 @@ test('create, edit, delete a profile with persistence across reloads', async ({ 
   await expect(page.getByTestId('profile-item')).toHaveCount(0);
 });
 
+test('Start conversation button opens the conversation; intro hint tracks profiles (#24)', async ({ page }) => {
+  // No profiles yet: empty hint shown, intro hint hidden.
+  await expect(page.getByTestId('empty-hint')).toBeVisible();
+  await expect(page.getByTestId('list-hint')).toBeHidden();
+
+  await page.getByTestId('new-profile').click();
+  await page.getByTestId('profile-name').fill('Josipa');
+  await page.getByTestId('profile-level').selectOption('B1');
+  await page.getByTestId('save-profile').click();
+
+  // With a profile: intro hint visible and an explicit Start button on the item.
+  await expect(page.getByTestId('list-hint')).toBeVisible();
+  const item = page.getByTestId('profile-item').filter({ hasText: 'Josipa' });
+  await expect(item.getByTestId('start-profile')).toBeVisible();
+
+  // Clicking Start goes straight to the conversation, greeting the profile.
+  await item.getByTestId('start-profile').click();
+  await expect(page.getByTestId('conversation-screen')).toBeVisible();
+  await expect(page.getByTestId('conversation-greeting')).toContainText('Josipa');
+  await expect(page.getByTestId('avatar')).toBeVisible();
+});
+
 test('validation blocks an incomplete profile', async ({ page }) => {
   await page.getByTestId('new-profile').click();
   await page.getByTestId('save-profile').click();
