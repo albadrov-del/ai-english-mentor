@@ -33,7 +33,7 @@ Spec: [Sprint2_addingCurriculum.md](Specificatio/Sprint%202%20-%20adding%20curri
 
 | #    | Task | Status | Issue | Progress note |
 |------|------|--------|-------|---------------|
-| S2-1 | Logging / observability | 🟡 in progress | [#21](https://github.com/albadrov-del/ai-english-mentor/issues/21) | [21-logging.md](progress/21-logging.md) |
+| S2-1 | Logging / observability | ✅ done | [#21](https://github.com/albadrov-del/ai-english-mentor/issues/21) | [21-logging.md](progress/21-logging.md) |
 | S2-2 | Mic continuous capture + silence-timeout | ⬜ TODO | [#22](https://github.com/albadrov-del/ai-english-mentor/issues/22) | — |
 | S2-3 | More natural TTS (voice / rate / pitch) | ⬜ TODO | [#23](https://github.com/albadrov-del/ai-english-mentor/issues/23) | — |
 | S2-4 | "Start conversation" button | ⬜ TODO | [#24](https://github.com/albadrov-del/ai-english-mentor/issues/24) | — |
