@@ -8,7 +8,7 @@ conversation adapts to your CEFR level (A1–C1) and personal interests.
 
 Built in public as a portfolio project — see [`PROGRESS.md`](PROGRESS.md) for the task-by-task
 history, [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the design decisions, and
-[`specifikacija.md`](specifikacija.md) for the original specification (Croatian).
+[`Sprint1_specifikacija.md`](Specificatio/Sprint%201%20-%20getting%20started/Sprint1_specifikacija.md) for the original specification (Croatian).
 
 ## Features
 - 🎙️ **Voice conversation** — speak into the mic (speech → text), the tutor replies aloud (text → speech), via the Web Speech API.

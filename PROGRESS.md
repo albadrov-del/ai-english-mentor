@@ -2,10 +2,10 @@
 
 State index for the whole project. **Read this first at the start of every session**, then the
 latest file in [`progress/`](progress/), to find the last unfinished task and continue from there.
-Workflow is defined in [`specifikacija.md`](specifikacija.md) §11.
+Workflow is defined in [`Sprint1_specifikacija.md`](Specificatio/Sprint%201%20-%20getting%20started/Sprint1_specifikacija.md) §11.
 
 - **Repo:** https://github.com/albadrov-del/ai-english-mentor
-- **Spec:** [`specifikacija.md`](specifikacija.md)
+- **Spec:** [`Sprint1_specifikacija.md`](Specificatio/Sprint%201%20-%20getting%20started/Sprint1_specifikacija.md)
 - **Model:** `claude-haiku-4-5-20251001`
 
 ## Status legend

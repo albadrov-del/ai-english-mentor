@@ -1,6 +1,6 @@
 # Architecture Decision Record — AI English Mentor (v1)
 
-**Status:** Accepted · **Date:** 2026-06-22 · **Spec:** [`../specifikacija.md`](../specifikacija.md)
+**Status:** Accepted · **Date:** 2026-06-22 · **Spec:** [`Sprint1_specifikacija.md`](../Specificatio/Sprint%201%20-%20getting%20started/Sprint1_specifikacija.md)
 
 Decisions for v1, made before coding so any session can build consistently. The guiding
 rule (from the spec) is **"the simplest thing that works."** Research notably *removed*
