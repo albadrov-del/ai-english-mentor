@@ -26,7 +26,19 @@ Workflow is defined in [`Sprint1_specifikacija.md`](Specificatio/Sprint%201%20-%
 | 8  | PWA wrapper (manifest, service worker, icons) | ✅ done | [#8](https://github.com/albadrov-del/ai-english-mentor/issues/8) | [08-pwa.md](progress/08-pwa.md) |
 | 9  | README + hosting + Android install docs | ✅ done | [#9](https://github.com/albadrov-del/ai-english-mentor/issues/9) | [09-readme-docs.md](progress/09-readme-docs.md) |
 
-🎉 **v1 complete — all 9 issues merged.** Owner-side to-dos remain: deploy to an HTTPS host (Render/Railway), set `ANTHROPIC_API_KEY` + `APP_PIN` + a low monthly spend cap, and verify real microphone/speech + Add-to-Home-Screen install on an Android phone.
+🎉 **v1 complete — all 9 issues merged & deployed live on Render** (auto-deploys on push to `main`; `ANTHROPIC_API_KEY` + `APP_PIN` + spend cap configured).
+
+## Sprint 2 — v1.1 (curriculum + UX/voice)
+Spec: [Sprint2_addingCurriculum.md](Specificatio/Sprint%202%20-%20adding%20curriculim/Sprint2_addingCurriculum.md). Built **dependencies-first** via the autonomous loop (self-merge on green CI; each merge auto-deploys to Render). Same status legend.
+
+| #    | Task | Status | Issue | Progress note |
+|------|------|--------|-------|---------------|
+| S2-1 | Logging / observability | ⬜ TODO | [#21](https://github.com/albadrov-del/ai-english-mentor/issues/21) | — |
+| S2-2 | Mic continuous capture + silence-timeout | ⬜ TODO | [#22](https://github.com/albadrov-del/ai-english-mentor/issues/22) | — |
+| S2-3 | More natural TTS (voice / rate / pitch) | ⬜ TODO | [#23](https://github.com/albadrov-del/ai-english-mentor/issues/23) | — |
+| S2-4 | "Start conversation" button | ⬜ TODO | [#24](https://github.com/albadrov-del/ai-english-mentor/issues/24) | — |
+| S2-5 | Save conversations (history + resume) | ⬜ TODO | [#25](https://github.com/albadrov-del/ai-english-mentor/issues/25) | — |
+| S2-6 | Tutor mode + curriculum | ⬜ TODO | [#26](https://github.com/albadrov-del/ai-english-mentor/issues/26) | — |
 
 ## Per-task workflow
 Branch `feat/NN-slug` → frequent commits (each a safe checkpoint) → PR with `Closes #N` →
