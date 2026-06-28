@@ -25,6 +25,7 @@ import {
   buildResumeMessages,
 } from './history.js';
 import { sendChat, sendSummary } from './api.js';
+import { CURRICULUM, getSession, firstPhase, phaseForExchange } from './curriculum.js';
 import {
   getSpeechRecognition,
   isSynthesisSupported,
@@ -46,6 +47,7 @@ const screens = {
   editor: document.getElementById('screen-editor'),
   conversation: document.getElementById('screen-conversation'),
   history: document.getElementById('screen-history'),
+  curriculum: document.getElementById('screen-curriculum'),
   summary: document.getElementById('screen-summary'),
 };
 
@@ -87,6 +89,9 @@ const els = {
   historyTitle: $('history-title'),
   historyBack: $('history-back'),
   historyNew: $('history-new'),
+  curriculumList: $('curriculum-list'),
+  curriculumTitle: $('curriculum-title'),
+  curriculumBack: $('curriculum-back'),
 };
 
 let profiles = [];
@@ -95,6 +100,8 @@ let editingId = null;
 let session = null;
 let currentConvoId = null; // the saved conversation the live session maps to
 let historyProfileId = null; // whose history the History screen is showing
+let curriculumProfileId = null; // whose lessons the Lessons screen is showing
+let tutor = null; // { sessionId, phase, exchanges } while in a guided lesson, else null
 let sending = false;
 let mic = null;
 let voiceOut = false;
@@ -149,6 +156,13 @@ function renderHome() {
     start.textContent = '▶ Start conversation';
     start.addEventListener('click', () => openConversation(p.id));
 
+    const lessons = document.createElement('button');
+    lessons.type = 'button';
+    lessons.className = 'btn btn-small';
+    lessons.dataset.testid = 'lessons-profile';
+    lessons.textContent = '📚 Lessons';
+    lessons.addEventListener('click', () => openCurriculum(p.id));
+
     const hist = document.createElement('button');
     hist.type = 'button';
     hist.className = 'btn btn-small';
@@ -165,7 +179,7 @@ function renderHome() {
 
     const actions = document.createElement('div');
     actions.className = 'profile-actions';
-    actions.append(start, hist, edit);
+    actions.append(start, lessons, hist, edit);
 
     li.append(select, actions);
     els.list.appendChild(li);
@@ -335,10 +349,15 @@ async function submitText(text) {
       profile: session.profile,
       messages: session.messages, // full history → multi-turn context
       pin: loadPin(),
+      tutor: tutor ? { sessionId: tutor.sessionId, phase: tutor.phase } : undefined,
     });
     session.messages = appendTurn(session.messages, 'assistant', reply);
     renderTranscript();
     persistSession();
+    if (tutor) {
+      tutor.exchanges += 1; // drift to the next phase as the lesson progresses
+      tutor.phase = phaseForExchange(tutor.exchanges);
+    }
     speakReply(reply);
   } catch (err) {
     showChatError(
@@ -388,10 +407,12 @@ function stopVoice() {
 // Save the live session as a conversation (created on first turn, updated thereafter).
 function persistSession() {
   if (!session || session.messages.length === 0) return;
+  const lesson = tutor ? getSession(tutor.sessionId) : null;
+  const extra = lesson ? { curriculumId: lesson.id, title: lesson.title } : {};
   const existing = currentConvoId ? findConversation(history, currentConvoId) : null;
   const convo = existing
     ? updateConversation(existing, session.messages)
-    : createConversation(session.profile, session.messages);
+    : createConversation(session.profile, session.messages, extra);
   currentConvoId = convo.id;
   history = upsertConversation(history, convo);
   saveHistory(history);
@@ -408,11 +429,12 @@ function startConversation(profile) {
   els.input.focus();
 }
 
-// Start a NEW conversation for a profile.
+// Start a NEW free conversation for a profile.
 function openConversation(id) {
   const profile = findProfile(profiles, id);
   if (!profile) return;
   currentConvoId = null;
+  tutor = null;
   startConversation(profile);
 }
 
@@ -470,6 +492,7 @@ async function resumeConversation(convoId) {
   if (!profile) return;
 
   currentConvoId = convoId;
+  tutor = null; // resumed chats continue as free conversation
   const { needsSummary, older, recent } = selectResumeContext(convo.messages);
   startConversation(profile);
 
@@ -490,6 +513,60 @@ async function resumeConversation(convoId) {
   session.messages = buildResumeMessages(recent, recap);
   els.greeting.textContent = `Practice session with ${profile.name} (${profile.level})`;
   renderTranscript();
+}
+
+// ---- Curriculum / tutor mode (Issue #26) ----
+function openCurriculum(profileId) {
+  curriculumProfileId = profileId;
+  renderCurriculum();
+  showScreen('curriculum');
+}
+
+function renderCurriculum() {
+  const profile = findProfile(profiles, curriculumProfileId);
+  els.curriculumTitle.textContent = profile ? `Lessons — ${profile.name}` : 'Lessons';
+  els.curriculumList.innerHTML = '';
+  for (const s of CURRICULUM) {
+    const li = document.createElement('li');
+    li.className = 'curriculum-item';
+    li.dataset.testid = 'curriculum-item';
+    li.dataset.id = s.id;
+
+    const open = document.createElement('button');
+    open.type = 'button';
+    open.className = 'curriculum-open';
+    open.dataset.testid = 'start-lesson';
+    open.innerHTML =
+      `<span class="curriculum-name">${escapeHtml(s.title)}</span>` +
+      `<span class="curriculum-badges"><span class="badge">${escapeHtml(s.level)}</span>` +
+      `<span class="badge badge-${s.type}">${escapeHtml(s.type)}</span></span>` +
+      `<span class="curriculum-goal">${escapeHtml(s.goal)}</span>`;
+    open.addEventListener('click', () => openTutorSession(curriculumProfileId, s.id));
+
+    li.append(open);
+    els.curriculumList.appendChild(li);
+  }
+}
+
+// Start a guided lesson: open with the curriculum's warm-up as the tutor's first turn,
+// then steer through phases via the backend tutor prompt (sessionId + phase).
+function openTutorSession(profileId, sessionId) {
+  const profile = findProfile(profiles, profileId);
+  const lesson = getSession(sessionId);
+  if (!profile || !lesson) return;
+  currentConvoId = null;
+  tutor = { sessionId, phase: firstPhase(), exchanges: 0 };
+  startConversation(profile);
+  els.greeting.textContent = `Lesson: ${lesson.title} — ${profile.name} (${profile.level})`;
+
+  const warmup = lesson.phases?.warmup;
+  if (warmup) {
+    session.messages = appendTurn(session.messages, 'assistant', warmup);
+    renderTranscript();
+    persistSession();
+    speakReply(warmup);
+  }
+  els.input.focus();
 }
 
 function leaveConversation(target) {
@@ -576,6 +653,7 @@ function init() {
   els.summaryHome.addEventListener('click', () => showScreen('home'));
   els.historyBack.addEventListener('click', goHome);
   els.historyNew.addEventListener('click', () => openConversation(historyProfileId));
+  els.curriculumBack.addEventListener('click', goHome);
 
   setupVoice();
   // TTS voices often load asynchronously — refresh the cache when they arrive.

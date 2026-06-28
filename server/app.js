@@ -2,7 +2,8 @@
 // the boundary (no real API calls, no network in CI).
 import express from 'express';
 import { fileURLToPath } from 'node:url';
-import { buildSystemPrompt, buildSummaryPrompt, checkPin, MODEL } from './prompt.js';
+import { buildSystemPrompt, buildTutorPrompt, buildSummaryPrompt, checkPin, MODEL } from './prompt.js';
+import { getSession } from '../public/js/curriculum.js';
 
 const PUBLIC_DIR = fileURLToPath(new URL('../public/', import.meta.url));
 const CHAT_MAX_TOKENS = 320; // short spoken turns (spec §3); non-streaming
@@ -43,15 +44,19 @@ export function createApp({ anthropic, pin = process.env.APP_PIN, model = MODEL 
 
   app.post('/api/chat', async (req, res) => {
     if (!authed(req, res)) return;
-    const { profile, messages } = req.body ?? {};
+    const { profile, messages, tutor } = req.body ?? {};
     if (!profile || !Array.isArray(messages)) {
       return res.status(400).json({ error: 'Expected { profile, messages }.' });
     }
+    // Tutor mode: the client sends only a sessionId + phase; the session is resolved from
+    // the backend's own curriculum, so no lesson/prompt text is passed through (spec §4/§5).
+    const lesson = tutor?.sessionId ? getSession(tutor.sessionId) : null;
+    const system = lesson ? buildTutorPrompt(profile, lesson, tutor?.phase) : buildSystemPrompt(profile);
     try {
       const response = await anthropic.messages.create({
         model,
         max_tokens: CHAT_MAX_TOKENS,
-        system: buildSystemPrompt(profile), // built server-side; client cannot supply it
+        system, // built server-side; client cannot supply prompt text
         messages: sanitizeMessages(messages),
       });
       res.json({ reply: extractText(response) });

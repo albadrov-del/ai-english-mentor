@@ -23,16 +23,20 @@ export function deriveTitle(messages) {
   return text.length > 40 ? `${text.slice(0, 40)}…` : text;
 }
 
-/** Build a fresh conversation record for a profile. */
-export function createConversation(profile, messages = []) {
+/**
+ * Build a fresh conversation record for a profile. `extra` may carry a tutor lesson:
+ * { title, curriculumId } — used so saved lessons keep their lesson title + link (#26).
+ */
+export function createConversation(profile, messages = [], extra = {}) {
   const now = Date.now();
   const msgs = Array.isArray(messages) ? messages : [];
   return {
     version: HISTORY_VERSION,
     id: newId(),
     profileId: profile?.id ?? null,
-    title: deriveTitle(msgs),
+    title: extra.title || deriveTitle(msgs),
     level: profile?.level ?? '',
+    curriculumId: extra.curriculumId ?? null,
     messages: msgs,
     createdAt: now,
     updatedAt: now,
@@ -88,6 +92,7 @@ export function migrateConversation(convo) {
     profileId: convo?.profileId ?? null,
     title: convo?.title ?? deriveTitle(msgs),
     level: convo?.level ?? '',
+    curriculumId: convo?.curriculumId ?? null,
     messages: msgs,
     createdAt: created,
     updatedAt: convo?.updatedAt ?? created,

@@ -34,4 +34,12 @@ describe('buildChatBody', () => {
     expect(body.profile).toEqual({ name: '', level: '', interests: '' });
     expect(body.messages).toEqual([]);
   });
+
+  test('includes tutor {sessionId, phase} only when a lesson is active (#26)', () => {
+    const body = buildChatBody(profile, [], { sessionId: 'pool', phase: 'warmup' });
+    expect(body.tutor).toEqual({ sessionId: 'pool', phase: 'warmup' });
+
+    expect('tutor' in buildChatBody(profile, [])).toBe(false);
+    expect('tutor' in buildChatBody(profile, [], { phase: 'warmup' })).toBe(false); // no sessionId → omitted
+  });
 });

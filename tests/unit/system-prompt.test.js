@@ -1,4 +1,5 @@
-import { buildSystemPrompt, buildSummaryPrompt, levelGuidance, checkPin } from '../../server/prompt.js';
+import { buildSystemPrompt, buildTutorPrompt, buildSummaryPrompt, levelGuidance, checkPin } from '../../server/prompt.js';
+import { getSession } from '../../public/js/curriculum.js';
 
 describe('buildSystemPrompt', () => {
   test('injects name, level, and interests', () => {
@@ -54,6 +55,33 @@ describe('level adaptation', () => {
     expect(a1).toContain('Beginner (A1/A2)');
     expect(c1).toContain('Advanced (C1)');
     expect(a1).not.toBe(c1);
+  });
+});
+
+describe('buildTutorPrompt (#26)', () => {
+  const profile = { name: 'Josipa', level: 'B2', interests: 'water treatment' };
+  const lesson = getSession('water-treatment');
+
+  test('extends — not replaces — the base prompt with the lesson context', () => {
+    const out = buildTutorPrompt(profile, lesson, 'warmup');
+    expect(out).toContain('Josipa'); // base pedagogy retained
+    expect(out).toContain('Intermediate'); // B2 level guidance carried through
+    expect(out).toContain(lesson.title);
+    expect(out).toContain(lesson.goal);
+    expect(out).toContain(lesson.vocab[0]);
+    expect(out.toLowerCase()).toContain('do not read'); // framed as a private guide
+    expect(out.toLowerCase()).toContain('never announce'); // phases not announced (spec §3/§5)
+  });
+
+  test('carries the requested phase; an unknown phase falls back to warmup', () => {
+    expect(buildTutorPrompt(profile, lesson, 'roleplay')).toContain('roleplay');
+    expect(buildTutorPrompt(profile, lesson, 'bogus')).toContain('warmup');
+  });
+
+  test('with no session, returns exactly the base prompt (no lesson context)', () => {
+    const out = buildTutorPrompt(profile, null, 'warmup');
+    expect(out).toBe(buildSystemPrompt(profile));
+    expect(out).not.toContain('LESSON CONTEXT');
   });
 });
 
