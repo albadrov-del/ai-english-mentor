@@ -2,6 +2,8 @@
 // mic state machine + support detection are unit-testable with stubs (no real speech).
 // Recognition is used as discrete utterances (continuous mode is unreliable — see docs/ARCHITECTURE.md).
 
+import { log } from './log.js';
+
 export function getSpeechRecognition(win = globalThis) {
   return win.SpeechRecognition || win.webkitSpeechRecognition || null;
 }
@@ -50,10 +52,14 @@ export function createMic({
     rec.onresult = (event) => {
       const transcript = event?.results?.[0]?.[0]?.transcript ?? '';
       const trimmed = String(transcript).trim();
+      log.debug('mic.result', { chars: trimmed.length });
       if (trimmed) onResult(trimmed);
     };
     rec.onerror = (event) => onError(event?.error ?? 'error');
-    rec.onend = () => setState('idle');
+    rec.onend = () => {
+      log.debug('mic.end');
+      setState('idle');
+    };
     return rec;
   }
 
@@ -62,6 +68,7 @@ export function createMic({
     getState: () => state,
     start() {
       if (!supported || state === 'listening') return;
+      log.debug('mic.start');
       recognition = build();
       setState('listening');
       try {
