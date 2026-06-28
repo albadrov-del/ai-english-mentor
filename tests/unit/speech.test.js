@@ -4,6 +4,10 @@ import {
   isRecognitionSupported,
   isSynthesisSupported,
   speak,
+  getVoices,
+  rankVoice,
+  listEnglishVoices,
+  pickVoice,
 } from '../../public/js/speech.js';
 
 // A single-slot fake scheduler. createMic only ever keeps one silence timer at a
@@ -211,9 +215,68 @@ describe('support detection', () => {
   });
 });
 
+describe('voice selection (#23)', () => {
+  const V = (name, lang, extra = {}) => ({
+    name,
+    lang,
+    voiceURI: extra.voiceURI ?? `${name}:${lang}`,
+    default: !!extra.default,
+  });
+  const voices = [
+    V('Google US English', 'en-US'),
+    V('Microsoft Aria Online (Natural)', 'en-US'),
+    V('Daniel', 'en-GB'),
+    V('Google français', 'fr-FR'),
+    V('Basic', 'en-US', { default: true }),
+  ];
+
+  test('getVoices returns [] when synthesis is unavailable', () => {
+    expect(getVoices({})).toEqual([]);
+    expect(getVoices({ speechSynthesis: {} })).toEqual([]);
+  });
+
+  test('rankVoice scores a natural/branded voice above a basic one', () => {
+    expect(rankVoice(V('Microsoft Aria Online (Natural)', 'en-US'), 'en-US')).toBeGreaterThan(
+      rankVoice(V('Basic', 'en-US'), 'en-US'),
+    );
+  });
+
+  test('listEnglishVoices keeps only en* voices, best-ranked first', () => {
+    const en = listEnglishVoices(voices, 'en-US');
+    expect(en.every((v) => /^en/i.test(v.lang))).toBe(true);
+    expect(en.some((v) => v.lang === 'fr-FR')).toBe(false);
+    expect(en[0].name).toMatch(/Natural/);
+  });
+
+  test('pickVoice honors a saved voiceURI when still present', () => {
+    expect(pickVoice(voices, { voiceURI: 'Daniel:en-GB', lang: 'en-US' }).name).toBe('Daniel');
+  });
+
+  test('pickVoice falls back to the best English voice when the saved one is gone', () => {
+    expect(pickVoice(voices, { voiceURI: 'not-on-this-device', lang: 'en-US' }).name).toMatch(/Natural/);
+  });
+
+  test('pickVoice returns null with no voices (use the browser default)', () => {
+    expect(pickVoice([], { voiceURI: 'x' })).toBeNull();
+  });
+});
+
 describe('speak', () => {
   test('returns false without synthesis support', () => {
     expect(speak({ text: 'hi' })).toBe(false);
+  });
+
+  test('applies the chosen voice, rate and pitch to the utterance', () => {
+    let utter;
+    const synth = { cancel() {}, speak: (u) => { utter = u; } };
+    function Utterance(text) {
+      this.text = text;
+    }
+    const voice = { name: 'Aria', voiceURI: 'aria' };
+    speak({ text: 'hi', speechSynthesis: synth, Utterance, voice, rate: 1.4, pitch: 0.7 });
+    expect(utter.voice).toBe(voice);
+    expect(utter.rate).toBeCloseTo(1.4);
+    expect(utter.pitch).toBeCloseTo(0.7);
   });
 
   test('dispatches via the injected synthesis', () => {

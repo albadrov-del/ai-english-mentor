@@ -66,6 +66,31 @@ test('mic button toggles listening, showing the live status indicator (speech st
   await expect(status).toBeHidden();
 });
 
+test('voice settings (voice/rate/pitch) show in the editor and persist (#23)', async ({ page }) => {
+  await createProfile(page, 'Ana', 'B1');
+
+  await page.getByTestId('profile-item').filter({ hasText: 'Ana' }).getByTestId('edit-profile').click();
+  await expect(page.getByTestId('screen-editor')).toBeVisible();
+  await page.getByTestId('voice-settings').evaluate((d) => { d.open = true; });
+
+  // Always at least the "Automatic" voice option; sliders default to 1.
+  await expect(page.getByTestId('profile-voice').locator('option').first()).toHaveText('Automatic (best available)');
+  const rate = page.getByTestId('profile-rate');
+  const pitch = page.getByTestId('profile-pitch');
+  await expect(rate).toHaveValue('1');
+  await expect(pitch).toHaveValue('1');
+
+  await rate.evaluate((el) => { el.value = '1.5'; el.dispatchEvent(new Event('input', { bubbles: true })); });
+  await pitch.evaluate((el) => { el.value = '0.8'; el.dispatchEvent(new Event('input', { bubbles: true })); });
+  await expect(page.getByTestId('rate-value')).toHaveText('1.5'); // live label updates
+  await page.getByTestId('save-profile').click();
+
+  // Reopen — the saved values come back.
+  await page.getByTestId('profile-item').filter({ hasText: 'Ana' }).getByTestId('edit-profile').click();
+  await expect(page.getByTestId('profile-rate')).toHaveValue('1.5');
+  await expect(page.getByTestId('profile-pitch')).toHaveValue('0.8');
+});
+
 test('a recognized phrase becomes a user turn and is sent (stubbed)', async ({ page }) => {
   await page.route('**/api/chat', (route) => route.fulfill({ json: { reply: 'spoken reply' } }));
   await page.evaluate(() => localStorage.setItem('aem.pin.v1', 'test-pin'));

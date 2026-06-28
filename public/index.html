@@ -53,6 +53,22 @@
           <textarea data-testid="profile-interests" name="interests" rows="3"
             placeholder="e.g. water treatment, Turkish &amp; Korean dramas, family, Vinted"></textarea>
         </label>
+        <details class="voice-settings" data-testid="voice-settings">
+          <summary>Voice (text-to-speech)</summary>
+          <label class="field">
+            <span class="field-label">Voice</span>
+            <select data-testid="profile-voice" name="voice"></select>
+          </label>
+          <label class="field">
+            <span class="field-label">Speed — <output data-testid="rate-value">1.0</output>×</span>
+            <input type="range" data-testid="profile-rate" name="rate" min="0.5" max="2" step="0.1" value="1" />
+          </label>
+          <label class="field">
+            <span class="field-label">Pitch — <output data-testid="pitch-value">1.0</output></span>
+            <input type="range" data-testid="profile-pitch" name="pitch" min="0" max="2" step="0.1" value="1" />
+          </label>
+          <p class="muted voice-hint">Voices come from your device/browser. “Automatic” picks the most natural English voice available.</p>
+        </details>
         <div class="form-actions">
           <button type="button" class="btn" data-testid="editor-back">Back</button>
           <button type="button" class="btn btn-danger" data-testid="delete-profile" hidden>Delete</button>

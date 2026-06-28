@@ -16,6 +16,59 @@ export function isSynthesisSupported(win = globalThis) {
   return typeof win.speechSynthesis !== 'undefined' && typeof win.SpeechSynthesisUtterance === 'function';
 }
 
+/** Snapshot of available TTS voices (may be empty until the 'voiceschanged' event). */
+export function getVoices(win = globalThis) {
+  try {
+    return win.speechSynthesis?.getVoices?.() ?? [];
+  } catch {
+    return [];
+  }
+}
+
+const NATURAL_NAME = /natural|neural/i;
+
+/**
+ * Heuristic score for how natural / suitable a voice is for `lang`. Branded neural
+ * voices (Google, Microsoft Online "Natural", Apple Enhanced/Siri) sound far less
+ * robotic than the basic built-ins, so we rank them up. Higher is better.
+ */
+export function rankVoice(voice, lang = 'en-US') {
+  if (!voice) return -Infinity;
+  const name = String(voice.name ?? '');
+  const vlang = String(voice.lang ?? '').replace('_', '-');
+  let score = 0;
+  if (NATURAL_NAME.test(name)) score += 5;
+  if (/google/i.test(name)) score += 3;
+  if (/microsoft/i.test(name)) score += 2;
+  if (/siri|premium|enhanced/i.test(name)) score += 2;
+  if (vlang.toLowerCase() === lang.toLowerCase()) score += 3;
+  else if (/^en/i.test(vlang)) score += 1;
+  if (voice.default) score += 0.5;
+  return score;
+}
+
+/** English voices, best-ranked first — for the settings dropdown. */
+export function listEnglishVoices(voices, lang = 'en-US') {
+  return (Array.isArray(voices) ? voices : [])
+    .filter((v) => /^en/i.test(String(v?.lang ?? '')))
+    .sort((a, b) => rankVoice(b, lang) - rankVoice(a, lang));
+}
+
+/**
+ * Choose the voice to speak with: the user's saved pick if still present, else the
+ * best-ranked English voice, else null (let the browser use its default).
+ */
+export function pickVoice(voices, { voiceURI = '', lang = 'en-US' } = {}) {
+  const list = Array.isArray(voices) ? voices : [];
+  if (list.length === 0) return null;
+  if (voiceURI) {
+    const exact = list.find((v) => v?.voiceURI === voiceURI);
+    if (exact) return exact;
+  }
+  const ranked = listEnglishVoices(list, lang);
+  return (ranked.length ? ranked : list)[0] ?? null;
+}
+
 /**
  * Mic controller with an idle ↔ listening state machine and continuous capture.
  *
@@ -181,14 +234,28 @@ export function createMic({
 
 /**
  * Speak text via SpeechSynthesis. Returns true if it was dispatched.
+ * `voice` (a SpeechSynthesisVoice), `rate` and `pitch` come from profile settings (#23);
  * onStart/onEnd fire on the utterance lifecycle (used to animate the avatar).
  */
-export function speak({ text, speechSynthesis, Utterance, lang = 'en-US', onStart, onEnd } = {}) {
+export function speak({
+  text,
+  speechSynthesis,
+  Utterance,
+  lang = 'en-US',
+  voice = null,
+  rate = 1,
+  pitch = 1,
+  onStart,
+  onEnd,
+} = {}) {
   if (!text || !speechSynthesis || typeof Utterance !== 'function') return false;
   try {
     speechSynthesis.cancel();
     const utterance = new Utterance(text);
     utterance.lang = lang;
+    if (voice) utterance.voice = voice;
+    if (Number.isFinite(rate)) utterance.rate = rate;
+    if (Number.isFinite(pitch)) utterance.pitch = pitch;
     if (typeof onStart === 'function') utterance.onstart = () => onStart();
     if (typeof onEnd === 'function') {
       const done = () => onEnd();

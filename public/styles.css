@@ -175,6 +175,13 @@ body {
 .settings summary { cursor: pointer; padding: 0.25rem 0; }
 .settings .field { margin-top: 0.75rem; }
 
+/* Voice (TTS) settings in the profile editor (#23) */
+.voice-settings { border: 1px solid var(--border); border-radius: var(--radius); padding: 0.6rem 0.85rem; }
+.voice-settings summary { cursor: pointer; color: var(--muted); }
+.voice-settings .field { margin-top: 0.85rem; }
+.voice-settings input[type='range'] { width: 100%; accent-color: var(--primary); }
+.voice-hint { font-size: 0.8rem; margin: 0.75rem 0 0; }
+
 /* Voice */
 .voice-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
 .mic-button.listening { background: var(--danger); border-color: var(--danger); color: #fff; animation: mic-pulse 1.4s ease-in-out infinite; }
