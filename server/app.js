@@ -55,7 +55,9 @@ export function createApp({ anthropic, pin = process.env.APP_PIN, model = MODEL 
         messages: sanitizeMessages(messages),
       });
       res.json({ reply: extractText(response) });
-    } catch {
+    } catch (err) {
+      // Log the real cause (e.g. authentication vs credit) — never the key/headers (spec §4).
+      console.error('[api/chat] upstream error:', err?.status ?? '', err?.name ?? '', err?.message ?? String(err));
       res.status(502).json({ error: 'Upstream error contacting the AI service.' });
     }
   });
@@ -79,7 +81,8 @@ export function createApp({ anthropic, pin = process.env.APP_PIN, model = MODEL 
         messages: [...transcript, elicit],
       });
       res.json({ summary: extractText(response) });
-    } catch {
+    } catch (err) {
+      console.error('[api/summary] upstream error:', err?.status ?? '', err?.name ?? '', err?.message ?? String(err));
       res.status(502).json({ error: 'Upstream error contacting the AI service.' });
     }
   });

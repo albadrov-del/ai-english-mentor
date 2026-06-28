@@ -179,3 +179,21 @@ body {
 .voice-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
 .mic-button.listening { background: var(--danger); border-color: var(--danger); color: #fff; }
 .voice-note { font-size: 0.85rem; }
+
+/* Debug panel — only mounted when ?debug=1 or localStorage aem.debug is set */
+.debug-panel {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-height: 30vh;
+  overflow: auto;
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  font: 11px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+  background: rgba(0, 0, 0, 0.85);
+  color: #9be29b;
+  border-top: 1px solid var(--border);
+  white-space: pre-wrap;
+  z-index: 9999;
+}

@@ -1,10 +1,10 @@
-// Frontend client for the chat proxy.
-// buildChatBody is pure (unit-tested); sendChat does the fetch (covered by E2E with a mocked route).
+// Frontend client for the proxy.
+// buildChatBody is pure (unit-tested); the fetch helpers are covered by E2E with a mocked route.
+import { log } from './log.js';
 
 /**
  * Assemble the request body. The frontend sends ONLY the profile + user/assistant
- * turns — never a system prompt (the backend builds that). Any stray system/other
- * roles are stripped here too.
+ * turns — never a system prompt (the backend builds that). Stray roles are stripped.
  */
 export function buildChatBody(profile, messages) {
   return {
@@ -19,34 +19,40 @@ export function buildChatBody(profile, messages) {
   };
 }
 
-/** POST to /api/chat with the PIN header; resolve to the reply text, or throw with .status. */
-export async function sendChat({ profile, messages, pin }) {
-  const res = await fetch('/api/chat', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json', 'x-app-pin': pin ?? '' },
-    body: JSON.stringify(buildChatBody(profile, messages)),
-  });
+// Shared POST helper with logging. The logger redacts the PIN header automatically.
+async function postJson(path, payload, pin) {
+  log.debug('POST', path, { headers: { 'x-app-pin': pin ?? '' }, messages: payload.messages?.length ?? 0 });
+  let res;
+  try {
+    res = await fetch(path, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-app-pin': pin ?? '' },
+      body: JSON.stringify(payload),
+    });
+  } catch (e) {
+    log.error('POST', path, 'network error', String(e && e.message ? e.message : e));
+    const err = new Error('Network error');
+    err.status = 0;
+    throw err;
+  }
+  log.debug('POST', path, '->', res.status);
   if (!res.ok) {
-    const err = new Error(`Chat request failed (${res.status})`);
+    log.error('POST', path, 'failed', res.status);
+    const err = new Error(`Request failed (${res.status})`);
     err.status = res.status;
     throw err;
   }
-  const data = await res.json().catch(() => ({}));
+  return res.json().catch(() => ({}));
+}
+
+/** POST /api/chat; resolve to the reply text, or throw with .status. */
+export async function sendChat({ profile, messages, pin }) {
+  const data = await postJson('/api/chat', buildChatBody(profile, messages), pin);
   return data.reply ?? '';
 }
 
-/** POST to /api/summary with the PIN header; resolve to the summary text, or throw with .status. */
+/** POST /api/summary; resolve to the summary text, or throw with .status. */
 export async function sendSummary({ profile, messages, pin }) {
-  const res = await fetch('/api/summary', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json', 'x-app-pin': pin ?? '' },
-    body: JSON.stringify(buildChatBody(profile, messages)),
-  });
-  if (!res.ok) {
-    const err = new Error(`Summary request failed (${res.status})`);
-    err.status = res.status;
-    throw err;
-  }
-  const data = await res.json().catch(() => ({}));
+  const data = await postJson('/api/summary', buildChatBody(profile, messages), pin);
   return data.summary ?? '';
 }

@@ -12,6 +12,7 @@ import { loadProfiles, saveProfiles, loadPin, savePin } from './storage.js';
 import { createSession, appendTurn } from './conversation.js';
 import { sendChat, sendSummary } from './api.js';
 import { getSpeechRecognition, isSynthesisSupported, createMic, speak } from './speech.js';
+import { log, mountDebugPanel } from './log.js';
 
 const $ = (testid) => document.querySelector(`[data-testid="${testid}"]`);
 const SPEECH_LANG = 'en-US';
@@ -230,6 +231,7 @@ async function submitText(text) {
   const trimmed = (text ?? '').trim();
   if (!session || sending || !trimmed) return;
 
+  log.debug('chat.send', { chars: trimmed.length });
   clearChatError();
   session.messages = appendTurn(session.messages, 'user', trimmed);
   renderTranscript();
@@ -331,6 +333,7 @@ function setupVoice() {
       onResult: (text) => submitText(text),
       onStateChange: updateMicUI,
       onError: (errType) => {
+        log.warn('mic.error', errType);
         // no-speech / aborted are normal (user paused or stopped) — ignore quietly.
         if (errType !== 'no-speech' && errType !== 'aborted') {
           showChatError('Microphone error — please try again or type your message.');
@@ -371,6 +374,8 @@ function init() {
 
   setupVoice();
   registerServiceWorker();
+  mountDebugPanel(window);
+  log.debug('app ready');
 }
 
 init();
