@@ -176,9 +176,27 @@ body {
 .settings .field { margin-top: 0.75rem; }
 
 /* Voice */
-.voice-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
-.mic-button.listening { background: var(--danger); border-color: var(--danger); color: #fff; }
+.voice-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
+.mic-button.listening { background: var(--danger); border-color: var(--danger); color: #fff; animation: mic-pulse 1.4s ease-in-out infinite; }
 .voice-note { font-size: 0.85rem; }
+
+/* Live "still listening" indicator + interim transcript (#22) */
+.mic-status {
+  margin: 0 0 0.75rem;
+  min-height: 1.2em;
+  font-size: 0.9rem;
+  color: var(--muted);
+  font-style: italic;
+}
+.mic-status[hidden] { display: none; }
+
+@keyframes mic-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(218, 54, 51, 0.55); }
+  50% { box-shadow: 0 0 0 6px rgba(218, 54, 51, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mic-button.listening { animation: none; }
+}
 
 /* Debug panel — only mounted when ?debug=1 or localStorage aem.debug is set */
 .debug-panel {
