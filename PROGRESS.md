@@ -38,7 +38,7 @@ Spec: [Sprint2_addingCurriculum.md](Specificatio/Sprint%202%20-%20adding%20curri
 | S2-3 | More natural TTS (voice / rate / pitch) | ✅ done | [#23](https://github.com/albadrov-del/ai-english-mentor/issues/23) | [23-natural-tts.md](progress/23-natural-tts.md) |
 | S2-4 | "Start conversation" button | ✅ done | [#24](https://github.com/albadrov-del/ai-english-mentor/issues/24) | [24-start-button.md](progress/24-start-button.md) |
 | S2-5 | Save conversations (history + resume) | ✅ done | [#25](https://github.com/albadrov-del/ai-english-mentor/issues/25) | [25-save-conversations.md](progress/25-save-conversations.md) |
-| S2-6 | Tutor mode + curriculum | ⬜ TODO | [#26](https://github.com/albadrov-del/ai-english-mentor/issues/26) | — |
+| S2-6 | Tutor mode + curriculum | 🟡 in progress | [#26](https://github.com/albadrov-del/ai-english-mentor/issues/26) | [26-tutor-curriculum.md](progress/26-tutor-curriculum.md) |
 
 ## Per-task workflow
 Branch `feat/NN-slug` → frequent commits (each a safe checkpoint) → PR with `Closes #N` →
