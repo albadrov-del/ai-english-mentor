@@ -20,6 +20,29 @@ export function saveProfiles(profiles) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(profiles));
 }
 
+const HISTORY_KEY = 'aem.history.v1';
+
+/** Load the saved conversations array, or [] if none / corrupt. */
+export function loadHistory() {
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+/** Persist the conversations array. */
+export function saveHistory(history) {
+  try {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+  } catch {
+    /* ignore (quota / private mode) */
+  }
+}
+
 const PIN_KEY = 'aem.pin.v1';
 
 /** Load the saved access PIN (empty string if none). */
