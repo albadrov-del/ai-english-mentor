@@ -1,6 +1,6 @@
 # S4-1 (#39) — Grammar Course (curriculum + teacher-style lesson flow)
 
-**Status:** 🟡 in progress · **Issue:** #39 · **Branch:** `feat/39-grammar-course` · **PR:** (pending)
+**Status:** ✅ done · **Issue:** #39 · **Merged:** PR #42
 
 ## Done
 - `public/js/course.js` (pure, shared with backend): `GRAMMAR_LESSONS` for **A1/A2/B1** (6 each,
@@ -25,6 +25,6 @@
 - "Finish lesson" currently just returns to the Course; **marking the lesson complete is S4-2** (progress).
 - Free-chat "Start conversation" (#24) is unchanged and stays as free practice; only the structured path changed.
 
-## Next (resume here)
-- [ ] Push, open PR `Closes #39`, confirm CI green, self-merge → flip PROGRESS S4-1 to ✅ →
-      continue to **S4-2 (#40)** — per-level progress (checkmarks, %, start-over, clear).
+## Outcome
+✅ **Done.** Merged via PR #42; CI green (E2E ×2, Unit ×2); auto-deployed to Render.
+Next: **S4-2 (#40)** — per-level progress (checkmarks, %, start-over, clear).

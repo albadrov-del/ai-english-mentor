@@ -64,7 +64,7 @@ picker with a grammar-backbone **Course** — per-level grammar lessons (teacher
 
 | #    | Task | Status | Issue | Progress note |
 |------|------|--------|-------|---------------|
-| S4-1 | Grammar Course — curriculum + lesson flow | 🟡 in progress | [#39](https://github.com/albadrov-del/ai-english-mentor/issues/39) | [39-grammar-course.md](progress/39-grammar-course.md) |
+| S4-1 | Grammar Course — curriculum + lesson flow | ✅ done | [#39](https://github.com/albadrov-del/ai-english-mentor/issues/39) | [39-grammar-course.md](progress/39-grammar-course.md) |
 | S4-2 | Per-level progress (checkmarks, %, start-over, clear) | ⬜ TODO | [#40](https://github.com/albadrov-del/ai-english-mentor/issues/40) | — |
 | S4-3 | Spoken level exam (placement + final, AI-graded) | ⬜ TODO | [#41](https://github.com/albadrov-del/ai-english-mentor/issues/41) | — |
 
