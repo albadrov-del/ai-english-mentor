@@ -1,6 +1,6 @@
 # S3-2 (#34) — Export / Import data (JSON backup)
 
-**Status:** 🟡 in progress · **Issue:** #34 · **Branch:** `feat/34-backup` · **PR:** (pending)
+**Status:** ✅ done · **Issue:** #34 · **Merged:** PR #37
 
 ## Done
 - `public/js/backup.js` (pure): `buildBackup({profiles, history}, exportedAt?)` → versioned,
@@ -22,6 +22,6 @@
 - Storage stays **localStorage** (owner decision) — no IndexedDB migration. The backup is the
   robustness answer to a cache-clear; true permanent storage (Capacitor/cloud) is the #9 follow-up.
 
-## Next (resume here)
-- [ ] Push, open PR `Closes #34`, confirm CI green, self-merge → flip PROGRESS S3-2 to ✅ →
-      continue to **S3-3 (#35)** — level-gated lessons.
+## Outcome
+✅ **Done.** Merged via PR #37; CI green (E2E ×2, Unit ×2); auto-deployed to Render.
+Next: **S3-3 (#35)** — level-gated lessons (final Sprint 3 issue).
