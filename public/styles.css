@@ -240,6 +240,10 @@ body {
 .field-check { display: flex; flex-direction: row; align-items: center; gap: 0.5rem; }
 .field-check input[type='checkbox'] { width: auto; min-height: 0; accent-color: var(--primary); }
 .field-check .field-label { margin: 0; }
+.backup-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.import-label { display: inline-flex; align-items: center; cursor: pointer; }
+.backup-status { font-size: 0.8rem; margin: 0.5rem 0 0; }
+.backup-status.error { color: var(--danger); }
 
 /* Voice (TTS) settings in the profile editor (#23) */
 .voice-settings { border: 1px solid var(--border); border-radius: var(--radius); padding: 0.6rem 0.85rem; }
