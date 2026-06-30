@@ -34,7 +34,7 @@ import {
   buildResumeMessages,
 } from './history.js';
 import { sendChat, sendSummary } from './api.js';
-import { CURRICULUM, getSession, firstPhase, phaseForExchange } from './curriculum.js';
+import { CURRICULUM, getSession, firstPhase, phaseForExchange, levelMatches } from './curriculum.js';
 import { buildBackup, parseBackup } from './backup.js';
 import {
   getSpeechRecognition,
@@ -107,6 +107,8 @@ const els = {
   curriculumList: $('curriculum-list'),
   curriculumTitle: $('curriculum-title'),
   curriculumBack: $('curriculum-back'),
+  curriculumNote: $('curriculum-note'),
+  toggleAllLevels: $('toggle-all-levels'),
 };
 
 let profiles = [];
@@ -116,6 +118,7 @@ let session = null;
 let currentConvoId = null; // the saved conversation the live session maps to
 let historyProfileId = null; // whose history the History screen is showing
 let curriculumProfileId = null; // whose lessons the Lessons screen is showing
+let curriculumShowAll = false; // override level-gating to show every lesson (#35)
 let tutor = null; // { sessionId, phase, exchanges } while in a guided lesson, else null
 let sending = false;
 let mic = null;
@@ -577,15 +580,35 @@ async function resumeConversation(convoId) {
 // ---- Curriculum / tutor mode (Issue #26) ----
 function openCurriculum(profileId) {
   curriculumProfileId = profileId;
+  curriculumShowAll = false; // default to the learner's level each visit
   renderCurriculum();
   showScreen('curriculum');
 }
 
 function renderCurriculum() {
   const profile = findProfile(profiles, curriculumProfileId);
+  const level = profile?.level ?? '';
   els.curriculumTitle.textContent = profile ? `Lessons — ${profile.name}` : 'Lessons';
+
+  // Only offer lessons for the learner's level by default (#35); never dead-end on an empty list.
+  const matching = CURRICULUM.filter((s) => levelMatches(s.level, level));
+  const noMatches = matching.length === 0;
+  const showAll = curriculumShowAll || noMatches;
+  const list = showAll ? CURRICULUM : matching;
+
+  if (noMatches) els.curriculumNote.textContent = `No lessons tuned to level ${level} yet — showing all.`;
+  else if (curriculumShowAll) els.curriculumNote.textContent = 'Showing all levels.';
+  else els.curriculumNote.textContent = `Showing lessons for your level (${level}).`;
+
+  const hiddenCount = CURRICULUM.length - matching.length;
+  const hasHidden = matching.length > 0 && hiddenCount > 0;
+  els.toggleAllLevels.hidden = !hasHidden;
+  els.toggleAllLevels.textContent = curriculumShowAll
+    ? 'Show only my level'
+    : `Show all levels (${hiddenCount} more)`;
+
   els.curriculumList.innerHTML = '';
-  for (const s of CURRICULUM) {
+  for (const s of list) {
     const li = document.createElement('li');
     li.className = 'curriculum-item';
     li.dataset.testid = 'curriculum-item';
@@ -736,6 +759,10 @@ function init() {
   els.historyBack.addEventListener('click', goHome);
   els.historyNew.addEventListener('click', () => openConversation(historyProfileId));
   els.curriculumBack.addEventListener('click', goHome);
+  els.toggleAllLevels.addEventListener('click', () => {
+    curriculumShowAll = !curriculumShowAll;
+    renderCurriculum();
+  });
 
   setupVoice();
   // TTS voices often load asynchronously — refresh the cache when they arrive.

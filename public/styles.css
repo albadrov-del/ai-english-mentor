@@ -148,6 +148,8 @@ body {
 }
 .badge-light { color: #3fb950; border-color: #3fb950; }
 .badge-challenging { color: #d29922; border-color: #d29922; }
+.curriculum-note { font-size: 0.85rem; margin: 0 0 0.75rem; }
+[data-testid='toggle-all-levels'] { margin-top: 0.75rem; }
 .profile-name { font-weight: 600; }
 .profile-level {
   font-size: 0.85rem;
