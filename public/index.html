@@ -96,6 +96,7 @@
     <section id="screen-conversation" class="screen" data-testid="conversation-screen" hidden>
       <div class="conversation-head">
         <button type="button" class="btn btn-small" data-testid="conversation-back">← Home</button>
+        <button type="button" class="btn btn-small btn-primary" data-testid="finish-lesson" hidden>Finish lesson ✓</button>
         <button type="button" class="btn btn-small" data-testid="end-session">End session</button>
       </div>
       <p class="conversation-greeting" data-testid="conversation-greeting"></p>
@@ -134,16 +135,15 @@
       <p class="empty-hint" data-testid="history-empty" hidden>No saved conversations yet — start one to see it here.</p>
     </section>
 
-    <!-- Curriculum / lessons (#26) -->
-    <section id="screen-curriculum" class="screen" data-testid="screen-curriculum" hidden>
+    <!-- Course: grammar lessons (#8) -->
+    <section id="screen-course" class="screen" data-testid="screen-course" hidden>
       <div class="screen-head">
-        <button type="button" class="btn btn-small" data-testid="curriculum-back">← Home</button>
+        <button type="button" class="btn btn-small" data-testid="course-back">← Home</button>
       </div>
-      <h2 data-testid="curriculum-title">Lessons</h2>
-      <p class="muted list-hint">Pick a lesson — the tutor guides it as a natural conversation, not a test.</p>
-      <p class="muted curriculum-note" data-testid="curriculum-note"></p>
-      <ul class="curriculum-list" data-testid="curriculum-list"></ul>
-      <button type="button" class="btn btn-small" data-testid="toggle-all-levels" hidden>Show all levels</button>
+      <h2 data-testid="course-title">Course</h2>
+      <p class="muted list-hint">Grammar lessons for your level — the tutor states the goal, then practices it with you in conversation.</p>
+      <p class="muted course-note" data-testid="course-note"></p>
+      <ul class="course-list" data-testid="course-list"></ul>
     </section>
 
     <!-- Session summary (placeholder — real summary in #7) -->

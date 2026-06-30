@@ -117,39 +117,41 @@ body {
 .history-name { font-weight: 600; }
 .history-meta { font-size: 0.8rem; color: var(--muted); }
 
-/* Curriculum / lessons (#26) */
-.curriculum-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.75rem; }
-.curriculum-item {
+/* Course: grammar lessons (#8) */
+.course-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.6rem; }
+.course-item {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
 }
-.curriculum-open {
+.course-open {
   width: 100%;
-  display: grid;
-  gap: 0.35rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   background: transparent;
   border: 0;
   color: var(--text);
   font: inherit;
   text-align: left;
   cursor: pointer;
-  padding: 0.85rem;
+  padding: 0.75rem;
 }
-.curriculum-name { font-weight: 600; }
-.curriculum-goal { font-size: 0.85rem; color: var(--muted); }
-.curriculum-badges { display: flex; gap: 0.4rem; }
-.badge {
-  font-size: 0.72rem;
-  border: 1px solid var(--border);
+.course-num {
+  flex: 0 0 auto;
+  width: 1.8rem;
+  height: 1.8rem;
+  display: grid;
+  place-items: center;
   border-radius: 999px;
-  padding: 0.05rem 0.55rem;
-  color: var(--muted);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  font-size: 0.85rem;
 }
-.badge-light { color: #3fb950; border-color: #3fb950; }
-.badge-challenging { color: #d29922; border-color: #d29922; }
-.curriculum-note { font-size: 0.85rem; margin: 0 0 0.75rem; }
-[data-testid='toggle-all-levels'] { margin-top: 0.75rem; }
+.course-text { display: grid; gap: 0.15rem; }
+.course-name { font-weight: 600; }
+.course-goal { font-size: 0.82rem; color: var(--muted); }
+.course-note { font-size: 0.85rem; margin: 0 0 0.75rem; }
 .profile-name { font-weight: 600; }
 .profile-level {
   font-size: 0.85rem;

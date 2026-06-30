@@ -2,8 +2,8 @@
 // the boundary (no real API calls, no network in CI).
 import express from 'express';
 import { fileURLToPath } from 'node:url';
-import { buildSystemPrompt, buildTutorPrompt, buildSummaryPrompt, checkPin, MODEL } from './prompt.js';
-import { getSession } from '../public/js/curriculum.js';
+import { buildSystemPrompt, buildLessonPrompt, buildSummaryPrompt, checkPin, MODEL } from './prompt.js';
+import { getLesson } from '../public/js/course.js';
 
 const PUBLIC_DIR = fileURLToPath(new URL('../public/', import.meta.url));
 const CHAT_MAX_TOKENS = 320; // short spoken turns (spec §3); non-streaming
@@ -44,14 +44,14 @@ export function createApp({ anthropic, pin = process.env.APP_PIN, model = MODEL 
 
   app.post('/api/chat', async (req, res) => {
     if (!authed(req, res)) return;
-    const { profile, messages, tutor } = req.body ?? {};
+    const { profile, messages, lesson } = req.body ?? {};
     if (!profile || !Array.isArray(messages)) {
       return res.status(400).json({ error: 'Expected { profile, messages }.' });
     }
-    // Tutor mode: the client sends only a sessionId + phase; the session is resolved from
-    // the backend's own curriculum, so no lesson/prompt text is passed through (spec §4/§5).
-    const lesson = tutor?.sessionId ? getSession(tutor.sessionId) : null;
-    const system = lesson ? buildTutorPrompt(profile, lesson, tutor?.phase) : buildSystemPrompt(profile);
+    // Grammar-lesson mode: the client sends only a lessonId; the lesson is resolved from the
+    // backend's own course data, so no lesson/prompt text is passed through (spec §4/§5).
+    const lessonDef = lesson?.lessonId ? getLesson(lesson.lessonId) : null;
+    const system = lessonDef ? buildLessonPrompt(profile, lessonDef) : buildSystemPrompt(profile);
     try {
       const response = await anthropic.messages.create({
         model,
