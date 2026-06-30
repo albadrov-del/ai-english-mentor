@@ -42,6 +42,20 @@ Spec: [Sprint2_addingCurriculum.md](Specificatio/Sprint%202%20-%20adding%20curri
 
 🎉 **Sprint 2 (v1.1) complete — all six issues #21–#26 merged, CI-green & deployed live on Render.**
 
+## Sprint 3 — robustness + backup + level-gating
+Spec: [Sprint3_tasks.md](Specificatio/Sprint%203%20-%20leveled%20curriculum/Sprint3_tasks.md). The spec is an evolved
+**superset** of Sprint 2 — #1/#3/#4/#6 already shipped, #2/#5 cores shipped. Sprint 3 builds the **delta**
+via the autonomous loop (self-merge on green CI; auto-deploys to Render). Same status legend.
+
+| #    | Task | Status | Issue | Progress note |
+|------|------|--------|-------|---------------|
+| S3-1 | Voice robustness — dedup + noise/gibberish filtering | ⬜ TODO | [#33](https://github.com/albadrov-del/ai-english-mentor/issues/33) | — |
+| S3-2 | Export / Import data (JSON backup) | ⬜ TODO | [#34](https://github.com/albadrov-del/ai-english-mentor/issues/34) | — |
+| S3-3 | Level-gated lessons (fix A1→B2 mismatch) | ⬜ TODO | [#35](https://github.com/albadrov-del/ai-english-mentor/issues/35) | — |
+
+**Deferred:** Sprint 4 = spec #8 (leveled grammar curriculum + per-level progress + initial/final exam, its own design).
+**Owner follow-ups (not built):** cloud TTS (#3), cloud STT (#7), permanent storage via Capacitor/cloud (#9).
+
 ## Per-task workflow
 Branch `feat/NN-slug` → frequent commits (each a safe checkpoint) → PR with `Closes #N` →
 **self-merge** to `main` → write `progress/NN-slug.md` → update this table. GitHub actions run via
