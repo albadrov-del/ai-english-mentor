@@ -7,6 +7,9 @@ async function createProfile(page, name, level) {
   await page.getByTestId('save-profile').click();
 }
 
+const openLessons = (page, name) =>
+  page.getByTestId('profile-item').filter({ hasText: name }).getByTestId('lessons-profile').click();
+
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
   await page.evaluate(() => localStorage.clear());
@@ -14,13 +17,20 @@ test.beforeEach(async ({ page }) => {
   await page.reload();
 });
 
-test('the lessons screen lists the seeded sessions (#26)', async ({ page }) => {
-  await createProfile(page, 'Josipa', 'B2');
-  await page.getByTestId('profile-item').filter({ hasText: 'Josipa' }).getByTestId('lessons-profile').click();
+test('lessons are gated to the profile level, with a Show-all toggle (#35)', async ({ page }) => {
+  await createProfile(page, 'Bea', 'B1');
+  await openLessons(page, 'Bea');
   await expect(page.getByTestId('screen-curriculum')).toBeVisible();
+
+  // B1 matches travel (A2–B1), pool (B1), dramas (B1) — the B2-only lesson is hidden.
+  await expect(page.getByTestId('curriculum-item')).toHaveCount(3);
+  await expect(page.getByTestId('curriculum-list')).not.toContainText('Chemicals & equipment');
+  await expect(page.getByTestId('curriculum-note')).toContainText('B1');
+
+  // Reveal all six seeded lessons.
+  await page.getByTestId('toggle-all-levels').click();
   await expect(page.getByTestId('curriculum-item')).toHaveCount(6);
-  await page.getByTestId('curriculum-back').click();
-  await expect(page.getByTestId('screen-home')).toBeVisible();
+  await expect(page.getByTestId('curriculum-list')).toContainText('Chemicals & equipment');
 });
 
 test('starting a lesson opens with the warm-up and sends tutor context (#26)', async ({ page }) => {
@@ -30,19 +40,17 @@ test('starting a lesson opens with the warm-up and sends tutor context (#26)', a
     await route.fulfill({ json: { reply: 'Great — tell me more!' } });
   });
 
-  await createProfile(page, 'Josipa', 'B2');
-  await page.getByTestId('profile-item').filter({ hasText: 'Josipa' }).getByTestId('lessons-profile').click();
+  await createProfile(page, 'Josipa', 'B1');
+  await openLessons(page, 'Josipa');
 
-  // Start the first lesson (Traveling with the family).
+  // For a B1 profile the first matching lesson is "Traveling with the family".
   await page.getByTestId('start-lesson').first().click();
   await expect(page.getByTestId('conversation-screen')).toBeVisible();
 
-  // The tutor opens with the curriculum warm-up (shown locally, no API call yet).
   const assistant = page.getByTestId('transcript').locator('[data-role="assistant"]');
   await expect(assistant.first()).toContainText('How was your last trip');
-  expect(bodies).toHaveLength(0);
+  expect(bodies).toHaveLength(0); // warm-up is shown locally, no API call yet
 
-  // The learner replies → the request carries the lesson id + phase (structured data, no prompt text).
   await page.getByTestId('message-input').fill('We went to Italy');
   await page.getByTestId('send-message').click();
   await expect(assistant.nth(1)).toHaveText('Great — tell me more!');
@@ -56,13 +64,12 @@ test('starting a lesson opens with the warm-up and sends tutor context (#26)', a
 
 test('a lesson is saved to history tagged with its lesson title (#26)', async ({ page }) => {
   await page.route('**/api/chat', (route) => route.fulfill({ json: { reply: 'ok' } }));
-  await createProfile(page, 'Josipa', 'B2');
-  await page.getByTestId('profile-item').filter({ hasText: 'Josipa' }).getByTestId('lessons-profile').click();
+  await createProfile(page, 'Josipa', 'B1');
+  await openLessons(page, 'Josipa');
   await page.getByTestId('start-lesson').first().click();
   await expect(page.getByTestId('conversation-screen')).toBeVisible();
   await page.getByTestId('conversation-back').click();
 
-  // The warm-up alone is enough to have saved the lesson; it shows in history by its title.
   await page.getByTestId('profile-item').filter({ hasText: 'Josipa' }).getByTestId('history-profile').click();
   await expect(page.getByTestId('history-item')).toContainText('Traveling with the family');
 });

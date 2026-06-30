@@ -6,6 +6,8 @@
 // Pedagogy (spec §3/§5): phases are an INTERNAL guide for the tutor — a natural conversation,
 // not a test. The tutor never announces phases. Add new sessions by appending to CURRICULUM.
 
+import { LEVELS } from './profiles.js';
+
 /** Phase order the tutor moves through during a lesson. */
 export const PHASES = ['warmup', 'vocabulary', 'guided_questions', 'roleplay', 'recap'];
 
@@ -175,4 +177,20 @@ export function phaseForExchange(exchanges, turnsPerPhase = TURNS_PER_PHASE) {
   const n = Number.isFinite(exchanges) ? Math.max(0, Math.floor(exchanges)) : 0;
   const idx = Math.min(Math.floor(n / turnsPerPhase), PHASES.length - 1);
   return PHASES[idx];
+}
+
+const CEFR_TOKEN = /A1|A2|B1|B2|C1/g;
+
+/**
+ * Does a lesson's CEFR level (a single level like "B2" or a range like "A2–B1" / "A2-B1")
+ * include the learner's level? Fixes the "A1 profile sees a B2 lesson" mismatch (#35). When
+ * the lesson level has no CEFR token, or the profile level is unknown, returns true (don't hide).
+ */
+export function levelMatches(sessionLevel, profileLevel) {
+  const profileOrd = LEVELS.indexOf(profileLevel);
+  if (profileOrd === -1) return true; // unknown profile level → don't hide anything
+  const tokens = String(sessionLevel ?? '').toUpperCase().match(CEFR_TOKEN);
+  const ords = (tokens ?? []).map((t) => LEVELS.indexOf(t)).filter((o) => o !== -1);
+  if (ords.length === 0) return true; // no CEFR info on the lesson → don't hide
+  return profileOrd >= Math.min(...ords) && profileOrd <= Math.max(...ords);
 }
