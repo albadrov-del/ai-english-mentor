@@ -34,6 +34,16 @@
           <input type="checkbox" data-testid="push-to-talk" />
           <span class="field-label">Push-to-talk — hold the mic button to speak (best in a noisy room)</span>
         </label>
+        <div class="field">
+          <span class="field-label">Backup — save your profiles &amp; conversations to a file</span>
+          <div class="backup-row">
+            <button type="button" class="btn btn-small" data-testid="export-data">Export data</button>
+            <label class="btn btn-small import-label" data-testid="import-data">Import data
+              <input type="file" accept="application/json,.json" data-testid="import-file" hidden />
+            </label>
+          </div>
+          <p class="muted backup-status" data-testid="backup-status" aria-live="polite"></p>
+        </div>
       </details>
     </section>
 

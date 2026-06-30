@@ -35,6 +35,7 @@ import {
 } from './history.js';
 import { sendChat, sendSummary } from './api.js';
 import { CURRICULUM, getSession, firstPhase, phaseForExchange } from './curriculum.js';
+import { buildBackup, parseBackup } from './backup.js';
 import {
   getSpeechRecognition,
   isSynthesisSupported,
@@ -68,6 +69,9 @@ const els = {
   newBtn: $('new-profile'),
   pinInput: $('pin-input'),
   pushToTalk: $('push-to-talk'),
+  exportBtn: $('export-data'),
+  importInput: $('import-file'),
+  backupStatus: $('backup-status'),
   form: document.getElementById('profile-form'),
   editorTitle: $('editor-title'),
   name: $('profile-name'),
@@ -292,6 +296,50 @@ function onDelete() {
   profiles = deleteProfile(profiles, editingId);
   saveProfiles(profiles);
   goHome();
+}
+
+// ---- Backup: export / import (Issue #34) ----
+function setBackupStatus(msg, isError = false) {
+  els.backupStatus.textContent = msg;
+  els.backupStatus.classList.toggle('error', isError);
+}
+
+function exportData() {
+  const data = buildBackup({ profiles, history });
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `ai-english-mentor-backup-${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  setBackupStatus(`Exported ${profiles.length} profile(s) and ${history.length} conversation(s).`);
+}
+
+async function importData(file) {
+  if (!file) return;
+  let parsed;
+  try {
+    parsed = parseBackup(await file.text());
+  } catch (err) {
+    setBackupStatus(err?.message || 'Could not read that backup.', true);
+    return;
+  }
+  if (
+    (profiles.length || history.length) &&
+    !window.confirm('Importing will replace your current profiles and conversations. Continue?')
+  ) {
+    return;
+  }
+  profiles = parsed.profiles;
+  saveProfiles(profiles);
+  history = parsed.history;
+  saveHistory(history);
+  renderHome();
+  showScreen('home');
+  setBackupStatus(`Imported ${profiles.length} profile(s) and ${history.length} conversation(s).`);
 }
 
 // ---- Conversation (Issues #2, #4, #5) ----
@@ -669,6 +717,11 @@ function init() {
   els.pinInput.addEventListener('input', () => savePin(els.pinInput.value.trim()));
   els.pushToTalk.checked = loadPushToTalk();
   els.pushToTalk.addEventListener('change', () => savePushToTalk(els.pushToTalk.checked));
+  els.exportBtn.addEventListener('click', exportData);
+  els.importInput.addEventListener('change', (e) => {
+    importData(e.target.files?.[0]);
+    e.target.value = ''; // allow re-importing the same file
+  });
 
   els.newBtn.addEventListener('click', () => openEditor(null));
   els.form.addEventListener('submit', onSave);
