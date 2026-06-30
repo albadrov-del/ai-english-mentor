@@ -1,6 +1,6 @@
 # S3-1 (#33) — Voice robustness: dedup + noise/gibberish filtering
 
-**Status:** 🟡 in progress · **Issue:** #33 · **Branch:** `feat/33-voice-robustness` · **PR:** (pending)
+**Status:** ✅ done · **Issue:** #33 · **Merged:** PR #36
 
 ## Done
 - `public/js/transcript.js` (pure): `dedupeTranscript(text)` collapses consecutively repeated
@@ -25,6 +25,6 @@
   handled via confidence + dedup + junk filters and the push-to-talk option (the strongest mitigation).
 - **Cloud STT** (spec #7 out-of-scope) remains an owner follow-up — not built.
 
-## Next (resume here)
-- [ ] Push, open PR `Closes #33`, confirm CI green (`gh pr checks <PR>`), self-merge → flip PROGRESS
-      S3-1 to ✅ → continue to **S3-2 (#34)** — Export / Import JSON backup.
+## Outcome
+✅ **Done.** Merged via PR #36; CI green (E2E ×2, Unit ×2); auto-deployed to Render.
+Next: **S3-2 (#34)** — Export / Import JSON backup.

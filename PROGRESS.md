@@ -49,7 +49,7 @@ via the autonomous loop (self-merge on green CI; auto-deploys to Render). Same s
 
 | #    | Task | Status | Issue | Progress note |
 |------|------|--------|-------|---------------|
-| S3-1 | Voice robustness — dedup + noise/gibberish filtering | 🟡 in progress | [#33](https://github.com/albadrov-del/ai-english-mentor/issues/33) | [33-voice-robustness.md](progress/33-voice-robustness.md) |
+| S3-1 | Voice robustness — dedup + noise/gibberish filtering | ✅ done | [#33](https://github.com/albadrov-del/ai-english-mentor/issues/33) | [33-voice-robustness.md](progress/33-voice-robustness.md) |
 | S3-2 | Export / Import data (JSON backup) | ⬜ TODO | [#34](https://github.com/albadrov-del/ai-english-mentor/issues/34) | — |
 | S3-3 | Level-gated lessons (fix A1→B2 mismatch) | ⬜ TODO | [#35](https://github.com/albadrov-del/ai-english-mentor/issues/35) | — |
 
