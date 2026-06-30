@@ -55,8 +55,18 @@ via the autonomous loop (self-merge on green CI; auto-deploys to Render). Same s
 
 🎉 **Sprint 3 complete — #33–#35 merged, CI-green & deployed live on Render.**
 
-**Deferred:** Sprint 4 = spec #8 (leveled grammar curriculum + per-level progress + initial/final exam, its own design).
 **Owner follow-ups (not built):** cloud TTS (#3), cloud STT (#7), permanent storage via Capacitor/cloud (#9).
+
+## Sprint 4 — leveled grammar Course (#8)
+Spec: [Sprint3_tasks.md](Specificatio/Sprint%203%20-%20leveled%20curriculum/Sprint3_tasks.md) (Issue #8). **Replaces** the topic
+picker with a grammar-backbone **Course** — per-level grammar lessons (teacher states the goal), per-level progress, and a
+**spoken, AI-graded** placement/final exam. Built via the autonomous loop (self-merge on green CI; auto-deploys to Render).
+
+| #    | Task | Status | Issue | Progress note |
+|------|------|--------|-------|---------------|
+| S4-1 | Grammar Course — curriculum + lesson flow | ⬜ TODO | [#39](https://github.com/albadrov-del/ai-english-mentor/issues/39) | — |
+| S4-2 | Per-level progress (checkmarks, %, start-over, clear) | ⬜ TODO | [#40](https://github.com/albadrov-del/ai-english-mentor/issues/40) | — |
+| S4-3 | Spoken level exam (placement + final, AI-graded) | ⬜ TODO | [#41](https://github.com/albadrov-del/ai-english-mentor/issues/41) | — |
 
 ## Per-task workflow
 Branch `feat/NN-slug` → frequent commits (each a safe checkpoint) → PR with `Closes #N` →
