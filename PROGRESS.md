@@ -51,7 +51,9 @@ via the autonomous loop (self-merge on green CI; auto-deploys to Render). Same s
 |------|------|--------|-------|---------------|
 | S3-1 | Voice robustness — dedup + noise/gibberish filtering | ✅ done | [#33](https://github.com/albadrov-del/ai-english-mentor/issues/33) | [33-voice-robustness.md](progress/33-voice-robustness.md) |
 | S3-2 | Export / Import data (JSON backup) | ✅ done | [#34](https://github.com/albadrov-del/ai-english-mentor/issues/34) | [34-backup.md](progress/34-backup.md) |
-| S3-3 | Level-gated lessons (fix A1→B2 mismatch) | 🟡 in progress | [#35](https://github.com/albadrov-del/ai-english-mentor/issues/35) | [35-level-gate.md](progress/35-level-gate.md) |
+| S3-3 | Level-gated lessons (fix A1→B2 mismatch) | ✅ done | [#35](https://github.com/albadrov-del/ai-english-mentor/issues/35) | [35-level-gate.md](progress/35-level-gate.md) |
+
+🎉 **Sprint 3 complete — #33–#35 merged, CI-green & deployed live on Render.**
 
 **Deferred:** Sprint 4 = spec #8 (leveled grammar curriculum + per-level progress + initial/final exam, its own design).
 **Owner follow-ups (not built):** cloud TTS (#3), cloud STT (#7), permanent storage via Capacitor/cloud (#9).

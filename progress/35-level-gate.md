@@ -1,6 +1,6 @@
 # S3-3 (#35) — Level-gated lessons (fix A1→B2 mismatch)
 
-**Status:** 🟡 in progress · **Issue:** #35 · **Branch:** `feat/35-level-gate` · **PR:** (pending)
+**Status:** ✅ done · **Issue:** #35 · **Merged:** PR #38
 
 ## Done
 - `public/js/curriculum.js`: `levelMatches(sessionLevel, profileLevel)` — parses a single level
@@ -21,6 +21,7 @@
 Interim fix. Sprint 4's per-level grammar curriculum (#8) replaces the topic-curriculum model with
 proper per-CEFR lesson sequences, superseding this gating.
 
-## Next (resume here)
-- [ ] Push, open PR `Closes #35`, confirm CI green, self-merge → flip PROGRESS S3-3 to ✅ →
-      **Sprint 3 complete** (mark the Sprint 3 section done) → STOP. #8 is Sprint 4 (its own plan).
+## Outcome
+✅ **Done.** Merged via PR #38; CI green (E2E ×2, Unit ×2); auto-deployed to Render.
+**This completes Sprint 3** (S3-1 #33, S3-2 #34, S3-3 #35). The big #8 (leveled grammar
+curriculum + per-level progress + exams) is deferred to **Sprint 4** — its own design pass.
