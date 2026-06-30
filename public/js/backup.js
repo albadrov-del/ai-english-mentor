@@ -11,14 +11,15 @@ import { validateProfile, withVoiceDefaults } from './profiles.js';
 export const BACKUP_APP = 'ai-english-mentor';
 export const BACKUP_VERSION = 1;
 
-/** Wrap profiles + history in a versioned, timestamped envelope (no PIN). */
-export function buildBackup({ profiles = [], history = [] } = {}, exportedAt = new Date().toISOString()) {
+/** Wrap profiles + history + progress in a versioned, timestamped envelope (no PIN). */
+export function buildBackup({ profiles = [], history = [], progress = {} } = {}, exportedAt = new Date().toISOString()) {
   return {
     app: BACKUP_APP,
     version: BACKUP_VERSION,
     exportedAt,
     profiles: Array.isArray(profiles) ? profiles : [],
     history: Array.isArray(history) ? history : [],
+    progress: progress && typeof progress === 'object' && !Array.isArray(progress) ? progress : {},
   };
 }
 
@@ -46,6 +47,8 @@ export function parseBackup(input) {
     .map((p) => withVoiceDefaults(p))
     .filter((p) => typeof p.id === 'string' && p.id && validateProfile(p).valid);
   const history = rawHistory.map((c) => migrateConversation(c));
+  const progress =
+    data.progress && typeof data.progress === 'object' && !Array.isArray(data.progress) ? data.progress : {};
 
-  return { profiles, history };
+  return { profiles, history, progress };
 }

@@ -43,6 +43,29 @@ export function saveHistory(history) {
   }
 }
 
+const PROGRESS_KEY = 'aem.progress.v1';
+
+/** Load the per-profile/per-level progress map, or {} if none / corrupt. */
+export function loadProgress() {
+  try {
+    const raw = localStorage.getItem(PROGRESS_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+/** Persist the progress map. */
+export function saveProgress(progress) {
+  try {
+    localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress ?? {}));
+  } catch {
+    /* ignore (quota / private mode) */
+  }
+}
+
 const PIN_KEY = 'aem.pin.v1';
 
 /** Load the saved access PIN (empty string if none). */

@@ -18,6 +18,12 @@ describe('buildBackup', () => {
     const out = buildBackup();
     expect(out.profiles).toEqual([]);
     expect(out.history).toEqual([]);
+    expect(out.progress).toEqual({});
+  });
+
+  test('includes the progress map (#40)', () => {
+    const progress = { p1: { A1: { completed: ['a1-1'], exam: {} } } };
+    expect(buildBackup({ profiles: [], history: [], progress }).progress).toEqual(progress);
   });
 });
 
@@ -63,5 +69,14 @@ describe('parseBackup', () => {
     expect(() => parseBackup(JSON.stringify({ app: 'something-else', profiles: [] }))).toThrow(
       /backup/i,
     );
+  });
+
+  test('returns the progress map, defaulting to {} for legacy backups (#40)', () => {
+    const progress = { p1: { A1: { completed: ['a1-1'] } } };
+    const withProg = buildBackup({ profiles: [], history: [], progress });
+    expect(parseBackup(JSON.stringify(withProg)).progress).toEqual(progress);
+    // legacy backup with no progress field
+    const legacy = { app: 'ai-english-mentor', version: 1, profiles: [], history: [] };
+    expect(parseBackup(JSON.stringify(legacy)).progress).toEqual({});
   });
 });

@@ -142,8 +142,16 @@
       </div>
       <h2 data-testid="course-title">Course</h2>
       <p class="muted list-hint">Grammar lessons for your level — the tutor states the goal, then practices it with you in conversation.</p>
+      <div class="course-progress" data-testid="course-progress" hidden>
+        <div class="course-bar"><div class="course-bar-fill" data-testid="course-bar-fill"></div></div>
+        <span class="course-percent muted" data-testid="course-percent">0%</span>
+      </div>
       <p class="muted course-note" data-testid="course-note"></p>
       <ul class="course-list" data-testid="course-list"></ul>
+      <div class="course-actions">
+        <button type="button" class="btn btn-small" data-testid="start-over" hidden>Start over</button>
+        <button type="button" class="btn btn-small btn-danger" data-testid="clear-progress" hidden>Clear progress</button>
+      </div>
     </section>
 
     <!-- Session summary (placeholder — real summary in #7) -->
