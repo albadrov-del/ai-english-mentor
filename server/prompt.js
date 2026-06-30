@@ -1,6 +1,5 @@
-// Pure backend logic: builds the tutor system prompt, the summary prompt, and checks the PIN.
-// No Express, no SDK — unit-testable. Spec §3/§5/§7.4.
-import { PHASES } from '../public/js/curriculum.js';
+// Pure backend logic: builds the tutor system prompt, the grammar-lesson prompt, the summary
+// prompt, and checks the PIN. No Express, no SDK — unit-testable. Spec §3/§5/§7.4.
 
 export const MODEL = 'claude-haiku-4-5-20251001';
 
@@ -44,29 +43,23 @@ Rules:
 }
 
 /**
- * Tutor-mode system prompt: the base prompt (pedagogy + level + profile) EXTENDED with a
- * private lesson guide from the curriculum (spec §3/§5 — phases steer the tutor, they are not
- * announced and it stays a conversation, not a test). `session` comes from the backend's own
- * curriculum (server resolves it by id), so no lesson text is passed through from the client.
+ * Grammar-lesson system prompt (Sprint 4 / #8): the base prompt (pedagogy + level + profile)
+ * EXTENDED with the current lesson's grammar focus, goal and context topic. Teacher-style but
+ * conversational (spec §3/§5 — practice, not a test). `lesson` comes from the backend's own course
+ * data (server resolves it by id), so no lesson text is passed through from the client.
  */
-export function buildTutorPrompt(profile, session, phase) {
+export function buildLessonPrompt(profile, lesson) {
   const base = buildSystemPrompt(profile);
-  if (!session || typeof session !== 'object') return base;
-
-  const ph = PHASES.includes(phase) ? phase : PHASES[0];
-  const vocab = Array.isArray(session.vocab) ? session.vocab.join(', ') : '';
-  const phrases = Array.isArray(session.phrases) ? session.phrases.join('; ') : '';
-  const guide = session.phases?.[ph];
-  const guideText = Array.isArray(guide) ? guide.join(' / ') : guide ?? '';
+  if (!lesson || typeof lesson !== 'object') return base;
 
   return `${base}
 
-LESSON CONTEXT — a private guide for you only. Do NOT read it aloud, and never announce phases or steps; just steer the conversation naturally.
-Topic: ${session.title}. Lesson goal: ${session.goal}
-Target vocabulary to weave in when it fits: ${vocab}
-Useful phrases to model: ${phrases}
-Right now you are around the "${ph}" stage: ${guideText}
-Move between stages smoothly and conversationally. Keep it a friendly chat, not a test — gently model corrections as you go. When the learner wants to stop, give the short encouraging recap (what went well + 2–3 things to practice).`;
+GRAMMAR LESSON — you are leading a focused but conversational lesson (practice, not a test).
+You have already greeted the learner and stated today's goal, so don't repeat the full intro.
+Grammar focus: ${lesson.grammarFocus}
+Lesson goal: ${lesson.goal}
+Context topic to use as the subject matter: ${lesson.contextTopic}
+Lead the learner to PRODUCE this grammar themselves through natural conversation about the context topic: ask questions that pull for it, gently model the correct form when they slip (don't stop to lecture), keep turns short and encouraging, and stay on this grammar point. When the learner wants to stop, give the short recap in your usual format (what went well + 2–3 things to practice).`;
 }
 
 /** System prompt for the end-of-session summary (spec §7.4). */

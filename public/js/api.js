@@ -6,7 +6,7 @@ import { log } from './log.js';
  * Assemble the request body. The frontend sends ONLY the profile + user/assistant
  * turns — never a system prompt (the backend builds that). Stray roles are stripped.
  */
-export function buildChatBody(profile, messages, tutor) {
+export function buildChatBody(profile, messages, lesson) {
   const body = {
     profile: {
       name: profile?.name ?? '',
@@ -17,9 +17,9 @@ export function buildChatBody(profile, messages, tutor) {
       .filter((m) => m && (m.role === 'user' || m.role === 'assistant'))
       .map((m) => ({ role: m.role, content: String(m.content ?? '') })),
   };
-  // Tutor mode: send only the lesson id + phase as structured data — never prompt text.
-  if (tutor && tutor.sessionId) {
-    body.tutor = { sessionId: String(tutor.sessionId), phase: String(tutor.phase ?? '') };
+  // Grammar-lesson mode: send only the lesson id as structured data — never prompt text.
+  if (lesson && lesson.lessonId) {
+    body.lesson = { lessonId: String(lesson.lessonId) };
   }
   return body;
 }
@@ -51,8 +51,8 @@ async function postJson(path, payload, pin) {
 }
 
 /** POST /api/chat; resolve to the reply text, or throw with .status. */
-export async function sendChat({ profile, messages, pin, tutor }) {
-  const data = await postJson('/api/chat', buildChatBody(profile, messages, tutor), pin);
+export async function sendChat({ profile, messages, pin, lesson }) {
+  const data = await postJson('/api/chat', buildChatBody(profile, messages, lesson), pin);
   return data.reply ?? '';
 }
 

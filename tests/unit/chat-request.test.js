@@ -35,11 +35,11 @@ describe('buildChatBody', () => {
     expect(body.messages).toEqual([]);
   });
 
-  test('includes tutor {sessionId, phase} only when a lesson is active (#26)', () => {
-    const body = buildChatBody(profile, [], { sessionId: 'pool', phase: 'warmup' });
-    expect(body.tutor).toEqual({ sessionId: 'pool', phase: 'warmup' });
+  test('includes lesson {lessonId} only when a grammar lesson is active (#8)', () => {
+    const body = buildChatBody(profile, [], { lessonId: 'b1-5' });
+    expect(body.lesson).toEqual({ lessonId: 'b1-5' });
 
-    expect('tutor' in buildChatBody(profile, [])).toBe(false);
-    expect('tutor' in buildChatBody(profile, [], { phase: 'warmup' })).toBe(false); // no sessionId → omitted
+    expect('lesson' in buildChatBody(profile, [])).toBe(false);
+    expect('lesson' in buildChatBody(profile, [], {})).toBe(false); // no lessonId → omitted
   });
 });

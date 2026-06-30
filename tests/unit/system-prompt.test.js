@@ -1,5 +1,5 @@
-import { buildSystemPrompt, buildTutorPrompt, buildSummaryPrompt, levelGuidance, checkPin } from '../../server/prompt.js';
-import { getSession } from '../../public/js/curriculum.js';
+import { buildSystemPrompt, buildLessonPrompt, buildSummaryPrompt, levelGuidance, checkPin } from '../../server/prompt.js';
+import { getLesson } from '../../public/js/course.js';
 
 describe('buildSystemPrompt', () => {
   test('injects name, level, and interests', () => {
@@ -58,30 +58,24 @@ describe('level adaptation', () => {
   });
 });
 
-describe('buildTutorPrompt (#26)', () => {
-  const profile = { name: 'Josipa', level: 'B2', interests: 'water treatment' };
-  const lesson = getSession('water-treatment');
+describe('buildLessonPrompt (#8)', () => {
+  const profile = { name: 'Josipa', level: 'B1', interests: 'water treatment' };
+  const lesson = getLesson('b1-5'); // passive voice → "how water is treated"
 
   test('extends — not replaces — the base prompt with the lesson context', () => {
-    const out = buildTutorPrompt(profile, lesson, 'warmup');
+    const out = buildLessonPrompt(profile, lesson);
     expect(out).toContain('Josipa'); // base pedagogy retained
-    expect(out).toContain('Intermediate'); // B2 level guidance carried through
-    expect(out).toContain(lesson.title);
+    expect(out).toContain('Intermediate'); // B1 level guidance carried through
+    expect(out).toContain(lesson.grammarFocus);
     expect(out).toContain(lesson.goal);
-    expect(out).toContain(lesson.vocab[0]);
-    expect(out.toLowerCase()).toContain('do not read'); // framed as a private guide
-    expect(out.toLowerCase()).toContain('never announce'); // phases not announced (spec §3/§5)
+    expect(out).toContain(lesson.contextTopic);
+    expect(out).toContain('GRAMMAR LESSON');
   });
 
-  test('carries the requested phase; an unknown phase falls back to warmup', () => {
-    expect(buildTutorPrompt(profile, lesson, 'roleplay')).toContain('roleplay');
-    expect(buildTutorPrompt(profile, lesson, 'bogus')).toContain('warmup');
-  });
-
-  test('with no session, returns exactly the base prompt (no lesson context)', () => {
-    const out = buildTutorPrompt(profile, null, 'warmup');
+  test('with no lesson, returns exactly the base prompt', () => {
+    const out = buildLessonPrompt(profile, null);
     expect(out).toBe(buildSystemPrompt(profile));
-    expect(out).not.toContain('LESSON CONTEXT');
+    expect(out).not.toContain('GRAMMAR LESSON');
   });
 });
 
