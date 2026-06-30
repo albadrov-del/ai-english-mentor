@@ -237,6 +237,9 @@ body {
 .settings { margin-top: 1.5rem; color: var(--muted); }
 .settings summary { cursor: pointer; padding: 0.25rem 0; }
 .settings .field { margin-top: 0.75rem; }
+.field-check { display: flex; flex-direction: row; align-items: center; gap: 0.5rem; }
+.field-check input[type='checkbox'] { width: auto; min-height: 0; accent-color: var(--primary); }
+.field-check .field-label { margin: 0; }
 
 /* Voice (TTS) settings in the profile editor (#23) */
 .voice-settings { border: 1px solid var(--border); border-radius: var(--radius); padding: 0.6rem 0.85rem; }

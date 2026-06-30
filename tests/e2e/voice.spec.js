@@ -110,3 +110,21 @@ test('a recognized phrase becomes a user turn and is sent (stubbed)', async ({ p
   await expect(transcript.locator('[data-role="user"]')).toHaveText('good morning');
   await expect(transcript.locator('[data-role="assistant"]')).toHaveText('spoken reply');
 });
+
+test('repeated phrases are de-duplicated before sending (#33)', async ({ page }) => {
+  await page.route('**/api/chat', (route) => route.fulfill({ json: { reply: 'ok' } }));
+  await page.evaluate(() => localStorage.setItem('aem.pin.v1', 'test-pin'));
+
+  await openConversation(page, 'Ana', 'B1');
+  await page.getByTestId('mic-button').click(); // start listening
+
+  // A final result with a repeated phrase (the bug) + good confidence.
+  await page.evaluate(() => {
+    const r = [{ transcript: 'scream to filter scream to filter', confidence: 0.95 }];
+    r.isFinal = true;
+    window.SpeechRecognition.last.onresult({ resultIndex: 0, results: [r] });
+  });
+  await page.getByTestId('mic-button').click(); // stop -> finalize -> send
+
+  await expect(page.getByTestId('transcript').locator('[data-role="user"]')).toHaveText('scream to filter');
+});

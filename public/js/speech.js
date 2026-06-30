@@ -3,6 +3,7 @@
 // Continuous capture with a silence-timeout finalize (Sprint 2 / #22) — see docs/ARCHITECTURE.md.
 
 import { log } from './log.js';
+import { dedupeTranscript, isJunk } from './transcript.js';
 
 export function getSpeechRecognition(win = globalThis) {
   return win.SpeechRecognition || win.webkitSpeechRecognition || null;
@@ -83,6 +84,7 @@ export function pickVoice(voices, { voiceURI = '', lang = 'en-US' } = {}) {
  * @param {Function} opts.Recognition      SpeechRecognition constructor (undefined → unsupported)
  * @param {string}   [opts.lang]
  * @param {number}   [opts.silenceMs]      quiet time before a turn is finalized (default 3000)
+ * @param {number}   [opts.minConfidence]  drop final results below this confidence (default 0.6)
  * @param {Function} [opts.onResult]       (transcript) => void  — final, merged transcript
  * @param {Function} [opts.onInterim]      (partial) => void     — live partial while listening
  * @param {Function} [opts.onStateChange]  (state) => void       — 'idle' | 'listening'
@@ -93,6 +95,7 @@ export function createMic({
   Recognition,
   lang = 'en-US',
   silenceMs = 3000,
+  minConfidence = 0.6,
   onResult = () => {},
   onInterim = () => {},
   onStateChange = () => {},
@@ -143,15 +146,17 @@ export function createMic({
     if (state !== 'listening') return;
     clearSilence();
     stopping = true;
-    const text = combined(); // capture before stop()/onend can reset it
+    const text = dedupeTranscript(combined()); // capture + clean before stop()/onend resets it
     try {
       recognition?.stop();
     } catch {
       /* ignore — fall through to idle */
     }
-    if (text) {
+    if (text && !isJunk(text)) {
       log.debug('mic.finalize', { chars: text.length });
       onResult(text);
+    } else if (text) {
+      log.debug('mic.dropped', { chars: text.length }); // junk/noise — not sent
     }
     if (state === 'listening') setIdle(); // real browsers end async; force bookkeeping
   }
@@ -180,8 +185,18 @@ export function createMic({
       for (let i = from; i < results.length; i++) {
         const r = results[i];
         const text = String(r?.[0]?.transcript ?? '');
-        if (r?.isFinal) finalized = `${finalized} ${text}`.replace(/\s+/g, ' ').trim();
-        else live += text;
+        if (r?.isFinal) {
+          // Drop low-confidence finals (likely noise). Many engines omit confidence or
+          // report 0 on finals — only drop when it's a real number below the threshold.
+          const conf = r?.[0]?.confidence;
+          if (typeof conf === 'number' && conf > 0 && conf < minConfidence) {
+            log.debug('mic.lowConfidence', { conf });
+            continue;
+          }
+          finalized = `${finalized} ${text}`.replace(/\s+/g, ' ').trim();
+        } else {
+          live += text;
+        }
       }
       interim = live.trim();
       log.debug('mic.result', { final: finalized.length, interim: interim.length });
