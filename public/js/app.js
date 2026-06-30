@@ -11,7 +11,16 @@ import {
   findProfile,
   withVoiceDefaults,
 } from './profiles.js';
-import { loadProfiles, saveProfiles, loadPin, savePin, loadHistory, saveHistory } from './storage.js';
+import {
+  loadProfiles,
+  saveProfiles,
+  loadPin,
+  savePin,
+  loadHistory,
+  saveHistory,
+  loadPushToTalk,
+  savePushToTalk,
+} from './storage.js';
 import { createSession, appendTurn } from './conversation.js';
 import {
   createConversation,
@@ -40,6 +49,7 @@ import { log, mountDebugPanel } from './log.js';
 const $ = (testid) => document.querySelector(`[data-testid="${testid}"]`);
 const SPEECH_LANG = 'en-US';
 const MIC_SILENCE_MS = 3000; // quiet time before a spoken turn is finalized (#22)
+const MIC_MIN_CONFIDENCE = 0.6; // drop final results below this confidence (#33)
 const LISTENING_HINT = 'Listening… speak naturally; tap to stop.';
 
 const screens = {
@@ -57,6 +67,7 @@ const els = {
   listHint: $('list-hint'),
   newBtn: $('new-profile'),
   pinInput: $('pin-input'),
+  pushToTalk: $('push-to-talk'),
   form: document.getElementById('profile-form'),
   editorTitle: $('editor-title'),
   name: $('profile-name'),
@@ -606,6 +617,7 @@ function setupVoice() {
       Recognition,
       lang: SPEECH_LANG,
       silenceMs: MIC_SILENCE_MS,
+      minConfidence: MIC_MIN_CONFIDENCE,
       onResult: (text) => submitText(text),
       onInterim: showInterim,
       onStateChange: updateMicUI,
@@ -618,7 +630,22 @@ function setupVoice() {
       },
     });
     els.mic.hidden = false;
-    els.mic.addEventListener('click', () => mic.toggle());
+    // Tap-to-toggle by default; hold-to-talk when push-to-talk is enabled (#33).
+    els.mic.addEventListener('click', () => {
+      if (!loadPushToTalk()) mic.toggle();
+    });
+    els.mic.addEventListener('pointerdown', (e) => {
+      if (loadPushToTalk()) {
+        e.preventDefault();
+        mic.start();
+      }
+    });
+    const releasePtt = () => {
+      if (loadPushToTalk() && mic.getState() === 'listening') mic.stop();
+    };
+    els.mic.addEventListener('pointerup', releasePtt);
+    els.mic.addEventListener('pointerleave', releasePtt);
+    els.mic.addEventListener('pointercancel', releasePtt);
   } else {
     els.voiceNote.hidden = false;
   }
@@ -640,6 +667,8 @@ function init() {
 
   els.pinInput.value = loadPin();
   els.pinInput.addEventListener('input', () => savePin(els.pinInput.value.trim()));
+  els.pushToTalk.checked = loadPushToTalk();
+  els.pushToTalk.addEventListener('change', () => savePushToTalk(els.pushToTalk.checked));
 
   els.newBtn.addEventListener('click', () => openEditor(null));
   els.form.addEventListener('submit', onSave);

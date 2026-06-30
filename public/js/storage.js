@@ -62,3 +62,23 @@ export function savePin(pin) {
     /* ignore */
   }
 }
+
+const PTT_KEY = 'aem.ptt.v1';
+
+/** Whether push-to-talk (hold-to-speak) mode is enabled (#33). */
+export function loadPushToTalk() {
+  try {
+    return localStorage.getItem(PTT_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+/** Persist the push-to-talk preference. */
+export function savePushToTalk(on) {
+  try {
+    localStorage.setItem(PTT_KEY, on ? '1' : '0');
+  } catch {
+    /* ignore */
+  }
+}

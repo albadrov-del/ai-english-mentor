@@ -51,8 +51,9 @@ function RecognitionFactory() {
 }
 
 // Result-list builders mirroring the cumulative shape of SpeechRecognitionResultList.
-const final = (t) => {
-  const r = [{ transcript: t }];
+const final = (t, confidence) => {
+  const alt = confidence === undefined ? { transcript: t } : { transcript: t, confidence };
+  const r = [alt];
   r.isFinal = true;
   return r;
 };
@@ -199,6 +200,56 @@ describe('createMic — continuous capture + silence timeout', () => {
     expect(mic.getState()).toBe('listening');
     mic.toggle();
     expect(mic.getState()).toBe('idle');
+  });
+});
+
+describe('transcript cleanup (#33)', () => {
+  function micWith(extra = {}) {
+    const Fake = RecognitionFactory();
+    const timers = fakeTimers();
+    const results = [];
+    const mic = createMic({ Recognition: Fake, timers, onResult: (t) => results.push(t), ...extra });
+    return { Fake, timers, results, mic };
+  }
+
+  test('drops a low-confidence final result (noise)', () => {
+    const { Fake, timers, results, mic } = micWith();
+    mic.start();
+    emit(Fake.last, 0, [final('mumble noise', 0.2)]);
+    timers.flush();
+    expect(results).toEqual([]);
+    expect(mic.getState()).toBe('idle');
+  });
+
+  test('keeps a confident final, and one with no confidence reported', () => {
+    const a = micWith();
+    a.mic.start();
+    emit(a.Fake.last, 0, [final('hello there', 0.9)]);
+    a.timers.flush();
+    expect(a.results).toEqual(['hello there']);
+
+    const b = micWith();
+    b.mic.start();
+    emit(b.Fake.last, 0, [final('hello there')]); // confidence omitted → kept
+    b.timers.flush();
+    expect(b.results).toEqual(['hello there']);
+  });
+
+  test('drops junk (punctuation-only) before sending', () => {
+    const { Fake, timers, results, mic } = micWith();
+    mic.start();
+    emit(Fake.last, 0, [final('...', 0.95)]);
+    timers.flush();
+    expect(results).toEqual([]);
+  });
+
+  test('de-duplicates a repeated phrase before sending', () => {
+    const { Fake, timers, results, mic } = micWith();
+    mic.start();
+    emit(Fake.last, 0, [final('scream to filter', 0.9)]);
+    emit(Fake.last, 1, [final('scream to filter', 0.9), final('scream to filter', 0.9)]);
+    timers.flush();
+    expect(results).toEqual(['scream to filter']);
   });
 });
 
