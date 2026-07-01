@@ -20,6 +20,8 @@ import {
   saveHistory,
   loadPushToTalk,
   savePushToTalk,
+  loadProgress,
+  saveProgress,
 } from './storage.js';
 import { createSession, appendTurn } from './conversation.js';
 import {
@@ -35,6 +37,7 @@ import {
 } from './history.js';
 import { sendChat, sendSummary } from './api.js';
 import { lessonsForLevel, getLesson, lessonOpener } from './course.js';
+import { isComplete, levelPercent, markComplete, resetLevel, clearProfile } from './progress.js';
 import { buildBackup, parseBackup } from './backup.js';
 import {
   getSpeechRecognition,
@@ -109,10 +112,16 @@ const els = {
   courseTitle: $('course-title'),
   courseBack: $('course-back'),
   courseNote: $('course-note'),
+  courseProgress: $('course-progress'),
+  courseBarFill: $('course-bar-fill'),
+  coursePercent: $('course-percent'),
+  startOver: $('start-over'),
+  clearProgress: $('clear-progress'),
 };
 
 let profiles = [];
 let history = [];
+let progress = {}; // { [profileId]: { [level]: { completed:[], exam:{} } } } (#40)
 let editingId = null;
 let session = null;
 let currentConvoId = null; // the saved conversation the live session maps to
@@ -307,7 +316,7 @@ function setBackupStatus(msg, isError = false) {
 }
 
 function exportData() {
-  const data = buildBackup({ profiles, history });
+  const data = buildBackup({ profiles, history, progress });
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -339,6 +348,8 @@ async function importData(file) {
   saveProfiles(profiles);
   history = parsed.history;
   saveHistory(history);
+  progress = parsed.progress ?? {};
+  saveProgress(progress);
   renderHome();
   showScreen('home');
   setBackupStatus(`Imported ${profiles.length} profile(s) and ${history.length} conversation(s).`);
@@ -590,19 +601,31 @@ function renderCourse() {
     ? `Grammar lessons for your level (${level}), in order.`
     : `No grammar lessons for level ${level} yet — A1, A2 and B1 are available.`;
 
+  // Progress bar + action buttons (#40) — only when this level has lessons.
+  const pid = profile?.id;
+  const pct = lessons.length ? levelPercent(progress, pid, level, lessons.length) : 0;
+  const doneCount = lessons.filter((l) => isComplete(progress, pid, level, l.id)).length;
+  els.courseProgress.hidden = lessons.length === 0;
+  els.courseBarFill.style.width = `${pct}%`;
+  els.coursePercent.textContent = `${pct}% (${doneCount}/${lessons.length})`;
+  els.startOver.hidden = lessons.length === 0;
+  els.clearProgress.hidden = lessons.length === 0;
+
   els.courseList.innerHTML = '';
   lessons.forEach((l, i) => {
+    const done = isComplete(progress, pid, level, l.id);
     const li = document.createElement('li');
-    li.className = 'course-item';
+    li.className = done ? 'course-item completed' : 'course-item';
     li.dataset.testid = 'course-item';
     li.dataset.id = l.id;
+    li.dataset.complete = done ? 'true' : 'false';
 
     const open = document.createElement('button');
     open.type = 'button';
     open.className = 'course-open';
     open.dataset.testid = 'start-lesson';
     open.innerHTML =
-      `<span class="course-num">${i + 1}</span>` +
+      `<span class="course-num">${done ? '✓' : i + 1}</span>` +
       `<span class="course-text">` +
       `<span class="course-name">${escapeHtml(l.grammarFocus)}</span>` +
       `<span class="course-goal">${escapeHtml(l.goal)}</span></span>`;
@@ -634,8 +657,15 @@ function openLesson(profileId, lessonId) {
 }
 
 function finishLesson() {
-  // S4-2 will mark the lesson complete here; for now, return to the Course.
   stopVoice();
+  if (lesson && session?.profile) {
+    const lessonDef = getLesson(lesson.lessonId);
+    if (lessonDef) {
+      progress = markComplete(progress, session.profile.id, lessonDef.level, lessonDef.id);
+      saveProgress(progress);
+    }
+  }
+  lesson = null;
   if (courseProfileId) openCourse(courseProfileId);
   else goHome();
 }
@@ -722,6 +752,7 @@ function init() {
   populateLevels();
   profiles = loadProfiles();
   history = loadHistory().map(migrateConversation);
+  progress = loadProgress();
   renderHome();
   showScreen('home');
 
@@ -749,6 +780,22 @@ function init() {
   els.historyBack.addEventListener('click', goHome);
   els.historyNew.addEventListener('click', () => openConversation(historyProfileId));
   els.courseBack.addEventListener('click', goHome);
+  els.startOver.addEventListener('click', () => {
+    const profile = findProfile(profiles, courseProfileId);
+    if (!profile) return;
+    if (!window.confirm('Start this level over? Your completed lessons will be unmarked.')) return;
+    progress = resetLevel(progress, profile.id, profile.level);
+    saveProgress(progress);
+    renderCourse();
+  });
+  els.clearProgress.addEventListener('click', () => {
+    const profile = findProfile(profiles, courseProfileId);
+    if (!profile) return;
+    if (!window.confirm('This will reset your progress. Are you sure?')) return;
+    progress = clearProfile(progress, profile.id);
+    saveProgress(progress);
+    renderCourse();
+  });
 
   setupVoice();
   // TTS voices often load asynchronously — refresh the cache when they arrive.

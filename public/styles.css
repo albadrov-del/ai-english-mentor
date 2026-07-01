@@ -152,6 +152,14 @@ body {
 .course-name { font-weight: 600; }
 .course-goal { font-size: 0.82rem; color: var(--muted); }
 .course-note { font-size: 0.85rem; margin: 0 0 0.75rem; }
+.course-item.completed .course-num { background: var(--primary); border-color: var(--primary); color: var(--primary-text); }
+
+/* Progress bar + actions (#40) */
+.course-progress { display: flex; align-items: center; gap: 0.6rem; margin: 0.25rem 0 0.75rem; }
+.course-bar { flex: 1; height: 8px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 999px; overflow: hidden; }
+.course-bar-fill { height: 100%; width: 0; background: var(--primary); transition: width 0.3s ease; }
+.course-percent { font-size: 0.8rem; white-space: nowrap; }
+.course-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem; }
 .profile-name { font-weight: 600; }
 .profile-level {
   font-size: 0.85rem;
