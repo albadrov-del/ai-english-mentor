@@ -56,6 +56,20 @@ export async function sendChat({ profile, messages, pin, lesson }) {
   return data.reply ?? '';
 }
 
+/** POST /api/grade; resolve to { correct, note }. Client sends only { itemId, answer } (+ profile). */
+export async function sendGrade({ profile, itemId, answer, pin }) {
+  const data = await postJson(
+    '/api/grade',
+    {
+      profile: { name: profile?.name ?? '', level: profile?.level ?? '', interests: profile?.interests ?? '' },
+      itemId: String(itemId ?? ''),
+      answer: String(answer ?? ''),
+    },
+    pin,
+  );
+  return { correct: !!data.correct, note: String(data.note ?? '') };
+}
+
 /** POST /api/summary; resolve to the summary text, or throw with .status. */
 export async function sendSummary({ profile, messages, pin }) {
   const data = await postJson('/api/summary', buildChatBody(profile, messages), pin);

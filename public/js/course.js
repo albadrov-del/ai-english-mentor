@@ -6,7 +6,7 @@
 // Grammar is the backbone: each lesson teaches ONE grammar unit, ordered simple→complex, practiced
 // in the context of a topic from the learner's profile (water treatment, dramas, family, travel,
 // pool). Lessons exist per CEFR level; only the learner's selected level is offered. Extend by adding
-// to GRAMMAR_LESSONS. (Pedagogy stays conversational, spec §3/§5; the exam — EXAMS — arrives in S4-3.)
+// to GRAMMAR_LESSONS. (Pedagogy stays conversational, spec §3/§5; the exam is EXAMS, below.)
 
 /** Internal phase guide for a lesson (the tutor moves through these naturally). */
 export const LESSON_PHASES = ['warmup', 'teaching', 'practice', 'recap'];
@@ -59,4 +59,63 @@ export function getLesson(id) {
 export function lessonOpener(lesson) {
   if (!lesson) return '';
   return `Today we'll practice ${lesson.grammarFocus}. ${lesson.goal} Let's talk about ${lesson.contextTopic} while we do it — ready when you are!`;
+}
+
+// ---- Placement / final exam (Sprint 4 / #41) ----
+// A FIXED set of spoken prompts per level, one per key grammar unit. The learner answers out loud
+// (or by typing); the model grades each answer for correct use of the target grammar. Because the
+// set is fixed, the initial and final exam are identical and directly comparable.
+export const EXAMS = {
+  A1: [
+    { id: 'a1-ex-1', grammarFocus: 'present simple of "to be"', prompt: 'Tell me about your family — use is and are.', target: 'am/is/are' },
+    { id: 'a1-ex-2', grammarFocus: 'there is / there are', prompt: 'What is in your kitchen? Use "there is" and "there are".', target: 'there is/are' },
+    { id: 'a1-ex-3', grammarFocus: 'present simple + frequency', prompt: 'What do you usually do at work? Use always, usually or sometimes.', target: 'present simple + adverbs of frequency' },
+    { id: 'a1-ex-4', grammarFocus: 'can / can’t', prompt: 'What can you do well, and what can’t you do?', target: 'can / can’t' },
+    { id: 'a1-ex-5', grammarFocus: 'articles + plurals', prompt: 'Describe a few things around you — use a, an, the and plurals.', target: 'articles and plural nouns' },
+    { id: 'a1-ex-6', grammarFocus: 'was / were', prompt: 'Where were you last weekend? Use was and were.', target: 'past simple of "to be"' },
+  ],
+  A2: [
+    { id: 'a2-ex-1', grammarFocus: 'past simple', prompt: 'What did you do yesterday? Use the past simple.', target: 'past simple' },
+    { id: 'a2-ex-2', grammarFocus: 'present continuous', prompt: 'What are you doing right now, and these days?', target: 'present continuous' },
+    { id: 'a2-ex-3', grammarFocus: 'going to (future)', prompt: 'What are you going to do next weekend?', target: '"going to" future' },
+    { id: 'a2-ex-4', grammarFocus: 'comparatives / superlatives', prompt: 'Compare two series you like — which is better, and which is the best?', target: 'comparatives and superlatives' },
+    { id: 'a2-ex-5', grammarFocus: 'some / any, much / many', prompt: 'What do you need to buy? Use some, any, much and many.', target: 'some/any, much/many' },
+    { id: 'a2-ex-6', grammarFocus: 'present perfect', prompt: 'Tell me something you have never done.', target: 'present perfect (ever/never)' },
+  ],
+  B1: [
+    { id: 'b1-ex-1', grammarFocus: 'present perfect vs past simple', prompt: 'What have you done in your job, and what did you do last year?', target: 'present perfect vs past simple' },
+    { id: 'b1-ex-2', grammarFocus: 'will vs going to', prompt: 'Make a prediction and a plan about your field.', target: 'will vs going to' },
+    { id: 'b1-ex-3', grammarFocus: 'first conditional', prompt: 'What will happen if there is a problem at work? Use if + present, will.', target: 'first conditional' },
+    { id: 'b1-ex-4', grammarFocus: 'second conditional', prompt: 'What would you change at your site if you could?', target: 'second conditional' },
+    { id: 'b1-ex-5', grammarFocus: 'passive voice', prompt: 'Explain how water is treated — use the passive.', target: 'passive voice' },
+    { id: 'b1-ex-6', grammarFocus: 'modals of advice / obligation', prompt: 'Give a friend advice about pool care — use should, must and have to.', target: 'should / must / have to' },
+  ],
+};
+
+/** The exam prompts for a level (empty array if none). */
+export function examForLevel(level) {
+  return (EXAMS[level] ?? []).slice();
+}
+
+/** Find an exam item by id across all levels, or null. */
+export function getExamItem(id) {
+  for (const level of Object.keys(EXAMS)) {
+    const found = EXAMS[level].find((it) => it.id === id);
+    if (found) return found;
+  }
+  return null;
+}
+
+/**
+ * Parse the model's one-line grade into { correct, note }. The grading prompt asks it to start with
+ * CORRECT or INCORRECT; anything not clearly "correct" counts as incorrect (fail closed).
+ */
+export function parseVerdict(text) {
+  const t = String(text ?? '').trim();
+  const correct = /^\s*correct\b/i.test(t);
+  const note = t
+    .replace(/^\s*(in)?correct\b/i, '')
+    .replace(/^[\s—:.\-]+/, '')
+    .trim();
+  return { correct, note };
 }

@@ -66,7 +66,7 @@ picker with a grammar-backbone **Course** — per-level grammar lessons (teacher
 |------|------|--------|-------|---------------|
 | S4-1 | Grammar Course — curriculum + lesson flow | ✅ done | [#39](https://github.com/albadrov-del/ai-english-mentor/issues/39) | [39-grammar-course.md](progress/39-grammar-course.md) |
 | S4-2 | Per-level progress (checkmarks, %, start-over, clear) | ✅ done | [#40](https://github.com/albadrov-del/ai-english-mentor/issues/40) | [40-progress.md](progress/40-progress.md) |
-| S4-3 | Spoken level exam (placement + final, AI-graded) | ⬜ TODO | [#41](https://github.com/albadrov-del/ai-english-mentor/issues/41) | — |
+| S4-3 | Spoken level exam (placement + final, AI-graded) | 🟡 in progress | [#41](https://github.com/albadrov-del/ai-english-mentor/issues/41) | [41-exam.md](progress/41-exam.md) |
 
 ## Per-task workflow
 Branch `feat/NN-slug` → frequent commits (each a safe checkpoint) → PR with `Closes #N` →

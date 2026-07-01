@@ -73,6 +73,21 @@ Write a short, encouraging end-of-session summary, addressed directly to ${safeN
 Keep it ${safeLevel}-appropriate in vocabulary and length. Be positive and motivating, never harsh, and end on an uplifting note.`;
 }
 
+/**
+ * Grading prompt for ONE spoken exam answer (Sprint 4 / #41). The item (question + target grammar)
+ * comes from the backend's own EXAMS — the client passes only an itemId + answer, so no grading text
+ * is passed through. Asks for a one-line CORRECT/INCORRECT verdict the server can parse.
+ */
+export function buildExamGradePrompt({ name, level } = {}, item = {}) {
+  const safeName = (name ?? '').trim() || 'the learner';
+  const safeLevel = (level ?? '').trim() || 'A2';
+  return `You are grading ONE spoken answer in a short English placement test for ${safeName} (level ${safeLevel}).
+The task was: "${item.prompt ?? ''}"
+Target grammar being tested: ${item.grammarFocus ?? item.target ?? ''}.
+Judge ONLY whether the answer attempts and uses this target grammar reasonably correctly. Be lenient about spelling, punctuation and small slips (it was spoken); focus on the target structure. If they clearly did not use it, mark it incorrect.
+Reply on ONE line, starting with the single word CORRECT or INCORRECT, then " — " and a short, encouraging note (max ~12 words). Example: "CORRECT — nice past tense there!"`;
+}
+
 /** PIN gate: true only on an exact match against a non-empty configured PIN (fail closed). */
 export function checkPin(provided, expected) {
   return typeof expected === 'string' && expected.length > 0 && provided === expected;
