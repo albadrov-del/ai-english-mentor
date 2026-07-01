@@ -1,6 +1,6 @@
 # S4-2 (#40) — Per-level progress tracking
 
-**Status:** 🟡 in progress · **Issue:** #40 · **Branch:** `feat/40-progress` · **PR:** (pending)
+**Status:** ✅ done · **Issue:** #40 · **Merged:** PR #43
 
 ## Done
 - `public/js/progress.js` (pure): model `{ [profileId]: { [level]: { completed:[lessonId],
@@ -19,6 +19,6 @@
   backup progress round-trip; `tests/e2e/progress.spec.js` (finish → ✓ + % rises, persists across reload,
   Clear resets, per-level separation). **130 unit/API green**; `--list` = 28 E2E.
 
-## Next (resume here)
-- [ ] Push, open PR `Closes #40`, confirm CI green, self-merge → flip PROGRESS S4-2 to ✅ →
-      continue to **S4-3 (#41)** — spoken level exam (placement + final, AI-graded).
+## Outcome
+✅ **Done.** Merged via PR #43; CI green (E2E ×2, Unit ×2); auto-deployed to Render.
+Next: **S4-3 (#41)** — spoken level exam (placement + final, AI-graded) — the final Sprint 4 issue.
