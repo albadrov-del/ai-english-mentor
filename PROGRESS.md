@@ -69,7 +69,7 @@ picker with a grammar-backbone **Course** — per-level grammar lessons (teacher
 | S4-3 | Spoken level exam (placement + final, AI-graded) | ✅ done | [#41](https://github.com/albadrov-del/ai-english-mentor/issues/41) | [41-exam.md](progress/41-exam.md) |
 
 🎉 **Sprint 4 complete — #39–#41 merged, CI-green & deployed live on Render.** Spec #8 (the leveled grammar Course + progress + spoken exam) is fully built.
-**Follow-up:** 🟡 B2/C1 grammar sequences added — [#45](https://github.com/albadrov-del/ai-english-mentor/issues/45), [45-b2-c1.md](progress/45-b2-c1.md) (the Course now covers A1–C1: 30 lessons + 30 exam prompts).
+**Follow-up:** ✅ B2/C1 grammar sequences added — [#45](https://github.com/albadrov-del/ai-english-mentor/issues/45), [45-b2-c1.md](progress/45-b2-c1.md) (merged #46; the Course now covers **A1–C1**: 30 lessons + 30 exam prompts).
 **Owner follow-ups (not built):** cloud TTS (#3) · cloud STT (#7) · permanent storage via Capacitor/cloud (#9).
 
 ## Per-task workflow
