@@ -7,8 +7,8 @@ import {
 } from '../../public/js/course.js';
 
 describe('grammar course data (#8)', () => {
-  test('seeds A1, A2 and B1 with ordered, contiguous lessons', () => {
-    for (const lvl of ['A1', 'A2', 'B1']) {
+  test('seeds A1 through C1 with ordered, contiguous lessons', () => {
+    for (const lvl of ['A1', 'A2', 'B1', 'B2', 'C1']) {
       const ls = lessonsForLevel(lvl);
       expect(ls.length).toBeGreaterThan(0);
       ls.forEach((l, i) => expect(l.order).toBe(i + 1));
@@ -40,7 +40,7 @@ describe('grammar course data (#8)', () => {
 
 describe('course helpers', () => {
   test('lessonsForLevel returns [] for an unseeded / unknown level', () => {
-    expect(lessonsForLevel('C1')).toEqual([]);
+    expect(lessonsForLevel('C1').length).toBeGreaterThan(0); // C1 is now seeded
     expect(lessonsForLevel('ZZ')).toEqual([]);
   });
 

@@ -2,8 +2,8 @@ import { EXAMS, examForLevel, getExamItem, parseVerdict } from '../../public/js/
 import { buildExamGradePrompt } from '../../server/prompt.js';
 
 describe('exam data (#41)', () => {
-  test('seeds A1, A2 and B1 with well-shaped prompts', () => {
-    for (const lvl of ['A1', 'A2', 'B1']) {
+  test('seeds A1 through C1 with well-shaped prompts', () => {
+    for (const lvl of ['A1', 'A2', 'B1', 'B2', 'C1']) {
       const items = examForLevel(lvl);
       expect(items.length).toBeGreaterThan(0);
       for (const it of items) {
@@ -15,8 +15,8 @@ describe('exam data (#41)', () => {
     }
   });
 
-  test('examForLevel is empty for an unseeded level', () => {
-    expect(examForLevel('C1')).toEqual([]);
+  test('examForLevel is empty for an unknown level', () => {
+    expect(examForLevel('ZZ')).toEqual([]);
   });
 
   test('exam item ids are globally unique', () => {
