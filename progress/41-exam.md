@@ -1,6 +1,6 @@
 # S4-3 (#41) — Spoken level exam (placement + final, AI-graded)
 
-**Status:** 🟡 in progress · **Issue:** #41 · **Branch:** `feat/41-exam` · **PR:** (pending)
+**Status:** ✅ done · **Issue:** #41 · **Merged:** PR #44
 
 ## Done
 - `public/js/course.js`: `EXAMS` per level (A1/A2/B1) — a **fixed** set of spoken prompts
@@ -24,7 +24,7 @@
 - Answers are graded by the model (spoken app → spoken test); the fixed prompt set keeps scores
   comparable. Exam scores live in `progress` (S4-2), so they're in export/import too.
 
-## Next (resume here)
-- [ ] Push, open PR `Closes #41`, confirm CI green, self-merge → flip PROGRESS S4-3 to ✅ →
-      **Sprint 4 complete** (mark the section done) → STOP. B2/C1 grammar + cloud TTS/STT + Capacitor
-      remain owner follow-ups.
+## Outcome
+✅ **Done.** Merged via PR #44; CI green (E2E ×2, Unit ×2); auto-deployed to Render.
+**This completes Sprint 4** (S4-1 #39, S4-2 #40, S4-3 #41) — spec #8 fully built. B2/C1 grammar,
+cloud TTS/STT, and Capacitor storage remain owner follow-ups.

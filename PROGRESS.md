@@ -66,7 +66,10 @@ picker with a grammar-backbone **Course** — per-level grammar lessons (teacher
 |------|------|--------|-------|---------------|
 | S4-1 | Grammar Course — curriculum + lesson flow | ✅ done | [#39](https://github.com/albadrov-del/ai-english-mentor/issues/39) | [39-grammar-course.md](progress/39-grammar-course.md) |
 | S4-2 | Per-level progress (checkmarks, %, start-over, clear) | ✅ done | [#40](https://github.com/albadrov-del/ai-english-mentor/issues/40) | [40-progress.md](progress/40-progress.md) |
-| S4-3 | Spoken level exam (placement + final, AI-graded) | 🟡 in progress | [#41](https://github.com/albadrov-del/ai-english-mentor/issues/41) | [41-exam.md](progress/41-exam.md) |
+| S4-3 | Spoken level exam (placement + final, AI-graded) | ✅ done | [#41](https://github.com/albadrov-del/ai-english-mentor/issues/41) | [41-exam.md](progress/41-exam.md) |
+
+🎉 **Sprint 4 complete — #39–#41 merged, CI-green & deployed live on Render.** Spec #8 (the leveled grammar Course + progress + spoken exam) is fully built.
+**Owner follow-ups (not built):** B2/C1 grammar sequences · cloud TTS (#3) · cloud STT (#7) · permanent storage via Capacitor/cloud (#9).
 
 ## Per-task workflow
 Branch `feat/NN-slug` → frequent commits (each a safe checkpoint) → PR with `Closes #N` →
