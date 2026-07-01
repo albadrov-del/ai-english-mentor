@@ -35,9 +35,9 @@ import {
   selectResumeContext,
   buildResumeMessages,
 } from './history.js';
-import { sendChat, sendSummary } from './api.js';
-import { lessonsForLevel, getLesson, lessonOpener } from './course.js';
-import { isComplete, levelPercent, markComplete, resetLevel, clearProfile } from './progress.js';
+import { sendChat, sendSummary, sendGrade } from './api.js';
+import { lessonsForLevel, getLesson, lessonOpener, examForLevel } from './course.js';
+import { isComplete, levelPercent, markComplete, resetLevel, clearProfile, getExam, setExam } from './progress.js';
 import { buildBackup, parseBackup } from './backup.js';
 import {
   getSpeechRecognition,
@@ -117,6 +117,8 @@ const els = {
   coursePercent: $('course-percent'),
   startOver: $('start-over'),
   clearProgress: $('clear-progress'),
+  startExam: $('start-exam'),
+  examStatus: $('exam-status'),
 };
 
 let profiles = [];
@@ -128,6 +130,7 @@ let currentConvoId = null; // the saved conversation the live session maps to
 let historyProfileId = null; // whose history the History screen is showing
 let courseProfileId = null; // whose course the Course screen is showing
 let lesson = null; // { lessonId } while in a grammar lesson, else null
+let examState = null; // { level, profileId, items, idx, correctCount } during an exam, else null
 let sending = false;
 let mic = null;
 let voiceOut = false;
@@ -408,6 +411,7 @@ function speakReply(text) {
 async function submitText(text) {
   const trimmed = (text ?? '').trim();
   if (!session || sending || !trimmed) return;
+  if (examState) return submitExamAnswer(trimmed);
 
   log.debug('chat.send', { chars: trimmed.length });
   clearChatError();
@@ -492,6 +496,7 @@ function startConversation(profile) {
   clearChatError();
   setSpeaking(false);
   els.finishLesson.hidden = true; // shown only in a grammar lesson
+  examState = null;
   if (mic) updateMicUI('idle');
   renderTranscript();
   showScreen('conversation');
@@ -611,6 +616,21 @@ function renderCourse() {
   els.startOver.hidden = lessons.length === 0;
   els.clearProgress.hidden = lessons.length === 0;
 
+  // Level exam entry + saved scores (#41).
+  const exam = getExam(progress, pid, level);
+  els.startExam.hidden = examForLevel(level).length === 0;
+  els.startExam.textContent = exam.initial ? 'Retake the level test' : 'Take the level test';
+  if (exam.initial || exam.final) {
+    const parts = [];
+    if (exam.initial) parts.push(`Placement ${exam.initial.score}/${exam.initial.total}`);
+    if (exam.final) parts.push(`Latest ${exam.final.score}/${exam.final.total}`);
+    els.examStatus.textContent = parts.join(' · ');
+    els.examStatus.hidden = false;
+  } else {
+    els.examStatus.hidden = true;
+    els.examStatus.textContent = '';
+  }
+
   els.courseList.innerHTML = '';
   lessons.forEach((l, i) => {
     const done = isComplete(progress, pid, level, l.id);
@@ -656,6 +676,77 @@ function openLesson(profileId, lessonId) {
   els.input.focus();
 }
 
+// ---- Level exam (Issue #41) ----
+function examPromptText(item, i, n) {
+  return `Question ${i + 1} of ${n}: ${item.prompt}`;
+}
+
+function openExam(profileId) {
+  const profile = findProfile(profiles, profileId);
+  const items = examForLevel(profile?.level);
+  if (!profile || !items.length) return;
+  currentConvoId = null;
+  lesson = null;
+  examState = { level: profile.level, profileId: profile.id, items, idx: 0, correctCount: 0 };
+  session = createSession(profile);
+  els.greeting.textContent = `Exam: ${profile.level} — answer each question by speaking or typing`;
+  els.finishLesson.hidden = true;
+  clearChatError();
+  setSpeaking(false);
+  if (mic) updateMicUI('idle');
+  session.messages = appendTurn(session.messages, 'assistant', examPromptText(items[0], 0, items.length));
+  renderTranscript();
+  showScreen('conversation');
+  els.input.focus();
+}
+
+async function submitExamAnswer(answer) {
+  const item = examState.items[examState.idx];
+  clearChatError();
+  session.messages = appendTurn(session.messages, 'user', answer);
+  renderTranscript();
+  setSending(true);
+  let verdict;
+  try {
+    verdict = await sendGrade({ profile: session.profile, itemId: item.id, answer, pin: loadPin() });
+  } catch {
+    showChatError('Could not grade that answer — check your connection and try again.');
+    setSending(false);
+    return;
+  }
+  if (verdict.correct) examState.correctCount += 1;
+  const mark = verdict.correct ? '✓ Correct' : '✗ Not quite';
+  session.messages = appendTurn(session.messages, 'assistant', verdict.note ? `${mark} — ${verdict.note}` : mark);
+  examState.idx += 1;
+  if (examState.idx < examState.items.length) {
+    const next = examState.items[examState.idx];
+    session.messages = appendTurn(session.messages, 'assistant', examPromptText(next, examState.idx, examState.items.length));
+    renderTranscript();
+  } else {
+    finalizeExam();
+  }
+  setSending(false);
+  els.input.focus();
+}
+
+function finalizeExam() {
+  const total = examState.items.length;
+  const score = examState.correctCount;
+  const prior = getExam(progress, examState.profileId, examState.level);
+  const which = prior.initial ? 'final' : 'initial';
+  progress = setExam(progress, examState.profileId, examState.level, which, { score, total, at: Date.now() });
+  saveProgress(progress);
+  let msg = `Exam complete — you scored ${score}/${total}.`;
+  if (which === 'final' && prior.initial) {
+    msg += ` Start ${prior.initial.score}/${prior.initial.total} → End ${score}/${total}.`;
+  } else {
+    msg += ' Saved as your placement — take it again after some lessons to see your progress.';
+  }
+  session.messages = appendTurn(session.messages, 'assistant', msg);
+  renderTranscript();
+  examState = null;
+}
+
 function finishLesson() {
   stopVoice();
   if (lesson && session?.profile) {
@@ -671,11 +762,13 @@ function finishLesson() {
 }
 
 function leaveConversation(target) {
+  examState = null;
   stopVoice();
   showScreen(target);
 }
 
 async function endSession() {
+  examState = null;
   stopVoice();
   showScreen('summary');
   if (!session) {
@@ -780,6 +873,7 @@ function init() {
   els.historyBack.addEventListener('click', goHome);
   els.historyNew.addEventListener('click', () => openConversation(historyProfileId));
   els.courseBack.addEventListener('click', goHome);
+  els.startExam.addEventListener('click', () => openExam(courseProfileId));
   els.startOver.addEventListener('click', () => {
     const profile = findProfile(profiles, courseProfileId);
     if (!profile) return;

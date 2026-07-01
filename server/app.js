@@ -2,8 +2,8 @@
 // the boundary (no real API calls, no network in CI).
 import express from 'express';
 import { fileURLToPath } from 'node:url';
-import { buildSystemPrompt, buildLessonPrompt, buildSummaryPrompt, checkPin, MODEL } from './prompt.js';
-import { getLesson } from '../public/js/course.js';
+import { buildSystemPrompt, buildLessonPrompt, buildSummaryPrompt, buildExamGradePrompt, checkPin, MODEL } from './prompt.js';
+import { getLesson, getExamItem, parseVerdict } from '../public/js/course.js';
 
 const PUBLIC_DIR = fileURLToPath(new URL('../public/', import.meta.url));
 const CHAT_MAX_TOKENS = 320; // short spoken turns (spec §3); non-streaming
@@ -88,6 +88,27 @@ export function createApp({ anthropic, pin = process.env.APP_PIN, model = MODEL 
       res.json({ summary: extractText(response) });
     } catch (err) {
       console.error('[api/summary] upstream error:', err?.status ?? '', err?.name ?? '', err?.message ?? String(err));
+      res.status(502).json({ error: 'Upstream error contacting the AI service.' });
+    }
+  });
+
+  app.post('/api/grade', async (req, res) => {
+    if (!authed(req, res)) return;
+    const { profile, itemId, answer } = req.body ?? {};
+    const item = itemId ? getExamItem(itemId) : null;
+    if (!profile || !item || typeof answer !== 'string') {
+      return res.status(400).json({ error: 'Expected { profile, itemId, answer }.' });
+    }
+    try {
+      const response = await anthropic.messages.create({
+        model,
+        max_tokens: 80,
+        system: buildExamGradePrompt(profile, item), // built server-side from our own exam item
+        messages: [{ role: 'user', content: answer }],
+      });
+      res.json(parseVerdict(extractText(response)));
+    } catch (err) {
+      console.error('[api/grade] upstream error:', err?.status ?? '', err?.name ?? '', err?.message ?? String(err));
       res.status(502).json({ error: 'Upstream error contacting the AI service.' });
     }
   });
